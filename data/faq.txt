@@ -1,0 +1,1289 @@
+---
+title: FAQ
+description: Frequently Asked Questions about Vitess
+weight: 2900
+cascade:
+  skipversions: true
+aliases: ['/docs/user-guides/faq/']
+---
+
+## Where can I ask questions about Vitess?
+
+We recommend asking questions in our [Slack workspace](https://vitess.io/slack). 
+
+We have a number of [other options](https://vitess.io/community/) that can be used as well.
+
+We request that you not ask individual project members for support. Instead, please use these public communication channels where the community can help and also benefit from the solutions provided. Thanks!
+
+## What are the key slack channels to join?
+
+There are many channels available and we encourage you to join as many or as few as interest you. Some of the most popular channels are listed below:
+
+* #general
+* #beginners
+* #developers
+* #kubernetes
+* #monitoring
+* #operator
+* #feat-vtorc
+* #releases
+* #vreplication
+* #website
+
+## How can I contribute a Pull Request to Vitess?
+
+We welcome new contributors to Vitess. Just be sure to read the [ contributing guide](../contributing/) before you start.
+
+If you are already familiar with Vitess and you would like to know how to submit a Pull Request or file an Issue check out the following links:
+
+* [GitHub Workflow](../contributing/github-workflow/)
+* [Submitting Issues](../contributing/github-workflow/#submitting-issues)
+
+## What are good videos to watch to get started learning about Vitess?
+
+We have a number of [recorded presentations and videos](../learning-resources/) that can be watched to start learning about Vitess.
+
+PlanetScale has also published a [Learn Vitess playlist](https://www.youtube.com/playlist?list=PLQiYtJSQdSEAJqEa5rh7Xa-RVCZWGzADN) on YouTube.
+
+## Additional FAQs
+
+
+
+---
+title: Authentication
+weight: 1
+---
+
+## How do I set up MySQL authentication in Vitess?
+
+Vitess uses its own mechanism for managing users and their permissions through VTGate. As a result, the CREATE USER.... and GRANT... statements will not work if sent through VTGate. Instead VTGate takes care of authentication for requests, so you will need to add any users that should have access to the Keyspaces via command-line options to VTGate.
+
+The simplest way to configure users is via a static authentication method. You can define the users in a JSON formatted file or string. Then you can load this file into VTGate with the additional command line parameters. 
+
+You will be able to configure the UserData string and add multiple passwords. For password format, Vitess supports the mysql_native_password hash format and you should always specify your passwords using this in a non-test or external environment. 
+
+To see an example of how to configure the static authentication file and more information on the various options please read this [guide](https://vitess.io/docs/user-guides/configuration-advanced/user-management/#authentication).
+
+There are other authentication mechanisms that can be utilized including LDAP-based authentication and TLS client certificate-based authentication.
+
+## How do I configure user-level permissions in Vitess?
+
+If you need to enforce fine-grained access control in Vitess, you cannot use the normal MySQL GRANT system to give certain application-level MySQL users more or fewer permissions than others. This is because Vitess uses connection pooling with fixed MySQL users at the VTTablet level, and implements its own authentication at the VTGate level. 
+
+Not all of the MySQL GRANT system has been implemented in Vitess. Authorization can be done via table-level ACLs. Individual users at the VTGate level can be assigned 3 levels of permissions.
+- Read (corresponding to SELECT)
+- Write (corresponding to DML, e.g. INSERT, UPDATE, DELETE)
+- Admin (corresponding to DDL, e.g. ALTER TABLE)
+
+The tables to which the permissions apply can be enumerated or specified using a regular expression.
+
+Vitess authorization via ACLs is applied at the VTTablet level, as opposed to on VTGate, where authentication is enforced. There are a number of [VTTablet command line parameters]((https://vitess.io/docs/user-guides/configuration-advanced/authorization/#vttablet-parameters-for-table-acls) that control the behavior of ACLs.
+
+
+---
+title: Metrics
+weight: 8
+---
+
+## What Grafana dashboards are available?
+
+There are a set of [Grafana dashboards and Prometheus alerts](https://github.com/vitessio/vitess/tree/main/vitess-mixin) available on the Vitess tree in GitHub. For more context on these dashboards please refer to the [original pull request](https://github.com/vitessio/vitess/pull/5609).
+
+## How can I implement user-level query logging?
+
+If you would like to differentiate metrics for a 'bad_user@their_machine' from a 'good_user@their_machine', rather than having both users appear to be the same user from the same server to MySQL you will need to use table ACLs.
+
+Vitess exports per-user stats on table ACLs. There are example usages of table ACLs demonstrated in the end-to-end tests.
+- How to [configure table ACLs](https://github.com/vitessio/vitess/blob/master/go/vt/vttablet/endtoend/main_test.go#L174)
+- [Tests](https://github.com/vitessio/vitess/blob/master/go/vt/vttablet/endtoend/acl_test.go) that demonstrate how table ACLs work
+
+To locate the variables that enable the export of per-user stats you will need to look in `/debug/vars` for variables that start with `User`, like `UserTableQueryCount`. The export itself is a multi-dimensional export categorized by Table, User and Query Type. You can also find similar names exported as prometheus metrics.
+
+Analyzing these variables can enable you to quickly narrow down the root cause of an incident, as these stats are fine-grained. Once you've identified the table and query type, you can then drill into `/queryz` or `/debug/query_stats` to determine if the issue is a particular query.
+
+
+---
+title: MySQL server variables
+weight: 10
+---
+
+## How can I change MySQL server variables in Vitess?
+
+In general, if you want to apply global variables at the MySQL level, you have to do it through VTTablet. There are a few ways to do that in the operator, but we recommend that you use vtctldclient ExecuteFetchAsDba.
+
+For example if you want to temporarily switch `sync_binlog` off on the MySQL that is being managed by a tablet with alias `zone1-0000000100` you would perform the following:
+
+```sh
+$ vtctldclient -server localhost:15999 ExecuteFetchAsDba zone1-0000000100 "set global sync_binlog=0"
+```
+
+This would show the following result after checking the variable:
+
+```sh
+$ vtctldclient -server localhost:15999 ExecuteFetchAsDba zone1-0000000100 "show variables like 'sync_binlog'"+---------------+-------+| Variable_name | Value |+---------------+-------+| sync_binlog   |     0 |+---------------+-------+
+```
+
+
+---
+title: Vindexes
+weight: 6
+---
+
+## What is a Vindex?
+If you are unfamiliar with Vindexes, we recommend that you first read the [documentation](https://vitess.io/docs/reference/features/vindexes/).
+
+## Does the Primary Vindex for a table need to match its Primary Key?
+
+It is not necessary that a Primary Vindex be the same as the Primary Key. In fact, there are many use cases where you would not want this. For example, if there are tables with one-to-many relationships, the Primary Vindex of the main table is likely to be the same as the Primary Key.
+
+However, if you want the rows of the secondary table to reside in the same shard as the parent row, the Primary Vindex for that table must be the foreign key that points to the main table. A typical example is a user and order table.
+
+In this case, the order table has the `user_id` as a foreign key to the `id` of the user table. The `order_id` may be the primary key for `order`, but you may still want to choose `user_id` as Primary Vindex, which will make a user's orders live in the same shard as the user.
+
+## How do I create a new LookupVindex?
+
+Please refer to the [user guide on CreateLookupVindex](https://vitess.io/docs/user-guides/configuration-advanced/createlookupvindex/) to learn how to create a new Lookup Vindex, how to add it to a column, and how to verify that it was successfully added.
+
+
+
+---
+title: VReplication
+weight: 7
+---
+
+
+## What is the typical replication lag in VReplication?
+
+VReplication is very fast, typically replication lag is below a second as long as your network is good. 
+
+However, if there is a network partition, things can be delayed depending on your configuration. For anything transactional, we recommend always reading from the source table. This principle follows the same rule as recommending reading from primary instead of a replica.
+
+
+
+---
+title: Vschema
+weight: 5
+---
+
+## How do you select your sharding key for Vitess?
+
+It is important to choose a strong sharding key aka primary Vindex when creating your VSchema, so the qualities you should look at are the following:
+- Frequency in WHERE clause of queries
+- Uniqueness (of the mapping function) 
+	- This means that a vindex will map a column value to only one keyspace ID (or none at all)
+- Co-locating rows for joins and for single-shard transactions
+	- This means using the same primary vindex for multiple tables, as all rows tied to the same primary index will automatically be located in the same shard due to the uniqueness property of the vindex map
+- High cardinality
+	- This means producing a sufficiently large number of keyspace IDs, which will give you finer control for rebalancing load through re-sharding
+
+You can read more about how to select your primary vindex in this [blog post](https://vitess.io/blog/2019-02-07-choosing-a-vindex/).
+
+## How can you update or change your vschema?
+
+Vitess provides a CLI command [ApplyVSchema](https://vitess.io/docs/reference/programs/vtctldclient/vtctldclient_applyvschema/) to make updates to the vschema within Vitess.
+
+## Without a Vschema how can table and schema routing work?
+
+There are a couple of special cases for when you don’t have a VSchema in place. 
+
+For example, if you add a table called foo to an unsharded keyspace called ks1 the following routing will enable you to access the table:
+1. `use ks1; select * from foo;`
+2. From the unqualified schema using `select * from ks1.foo;`
+3. As long as you have only one keyspace, you can use `select * from foo;` in anonymous mode.
+
+However, if you have more than one keyspace you will not be able to access the table from the unqualified schema using `select * from foo` until you add the table to the VSchema.
+
+For a sharded keyspace you will not be able to access the table until you have a VSchema for it. However, you will be able to see it in `show tables`.
+
+
+---
+title: VTGate
+weight: 4
+---
+
+## How does VTGate know which shard to route a query to?
+
+VTGate knows both the Vschema and the schema of your tables in the backing MySQL databases.
+
+This enables VTGate to look at the WHERE clause of the query and then route the queries to the correct shards. VTGate is also aware of the sharding metadata, cluster state, and availability of tables, so it will only scatter the query across the shards it needs to use.
+
+## How do you use gRPC with VTGate?
+
+To do this you will need to use the Vitess MySQL Go client. We have a [Golang compatible gRPC driver](https://pkg.go.dev/vitess.io/vitess/go/vt/vitessdriver) and a [Java driver](https://github.com/vitessio/vitess/tree/master/java).
+
+Once you have the appropriate driver you will need to add the `--service_map grpc-vtgateservice` VTGate flag and set the port `--grpc_port`.
+
+This runs on a standard gRPC interface, so if you want to directly use it you can follow the example below:
+
+```sh
+#!/usr/bin/env node
+import Debug from "debug";
+import * as grpc from "grpc";
+import {CallerID} from './proto/vitess/vtrpc_pb';
+import {BoundQuery} from './proto/vitess/query_pb';
+import {Session,ExecuteRequest,ExecuteResponse} from './proto/vitess/vtgate_pb';
+import {VitessClient} from  './proto/vitess/vtgateservice_grpc_pb';
+const log = Debug("VtgateClient");
+const client = new VitessClient("139.178.90.99:15306",grpc.credentials.createInsecure());
+const SingleQuery = async () => {
+   return new Promise((resolve,reject) => {
+       const caller = new CallerID();
+       caller.setPrincipal("nodejs");
+       const session = new Session();
+       session.setTargetString("main");
+       const query = new BoundQuery();
+       query.setSql("SELECT * from main.sbtest1 where id=10");
+       const request = new ExecuteRequest()
+       request.setSession(session);
+       request.setQuery(query);
+       request.setCallerId(caller);
+       client.execute(request, (err: grpc.ServiceError | null, response: ExecuteResponse ) => {
+           if( err != null ){
+               console.log(`[SingleQuery] Error: ${err.message}`)
+               reject(err); return;
+           }
+           console.log(`[SingleQuery] Response: ${JSON.stringify(response.toObject())}`)
+           resolve(response);
+       });
+   });
+}
+async function main() {
+   client.
+   console.log(`[main] Starting`);
+   await SingleQuery();
+}
+main().then((_) => _);
+```
+
+
+
+---
+title: VTTablet
+weight: 3
+---
+
+## Can VTTablets start without sql_mode set to STRICT_TRANS_TABLES?
+
+Yes. This check can be disabled by  setting `--enforce_strict_trans_tables=false` on the VTTablet.
+
+## What does it mean if a VTTablet is unhappy?
+
+An unhappy VTTablet is one whose replication is lagging beyond the limit to which the `--degraded_threshold` is set. An unhappy VTTablet could still be serving queries. 
+
+VTGate will always prefer happy VTTablets over unhappy VTTablets, however if all your VTTablets are unhappy then it will serve all of them. 
+
+## Are there recommended thresholds for health statuses?
+
+We don’t have recommended thresholds as Vitess doesn’t make any functional decisions based on the statuses, beyond representing the current status in the UI. You do need to be sure to set your alerting to something lower than the threshold you choose.
+
+Another option is if you have the replication heartbeat enabled, you can monitor that statistic.  
+
+Or if you’re exporting the mysqld stats using something like [mysqld-exporter](https://github.com/prometheus/mysqld_exporter) you can monitor the replication lag via those statistics directly. 
+
+If you are using this option you will need to set the alert at something like: "Fire when lag is > X seconds for Y minutes". Otherwise you'll get false alerts, since the `Seconds_Behind_Source` reporting from MySQL often jumps around when either the replication is stopped/started or when traffic is low. 
+
+After either of those occur the `Seconds_Behind_Source` reporting can take some time to settle. 
+
+## How can I change the DBA login to VTTablet?
+
+If you are concerned about access security and want to change the admin user account for a given VTTablet you will need to perform the following steps:  
+1. Create the new user in the database. 
+2. Give that user the required permissions. The list of what Vitess requires can be found [here](https://github.com/vitessio/vitess/blob/master/config/init_db.sql).
+3. Then when you start up Vitess you need to pass in the username and passwords to Vitess. That is done by setting `--db_user` and `--db-credentials-file`. The credentials file will have the format:
+
+```sh
+ {
+   "<user name>": [
+       "<password>"
+   ]
+ }
+ ```
+
+After you have followed the above steps the credentials file will tell VTTablet the account to use to connect to the database. 
+
+You can read additional details on the credentials file format [here](https://github.com/vitessio/vitess/blob/master/examples/local/mysql_auth_server_static_creds.json).
+
+## If mysqld replication thread isn't running what restarts it?
+
+VTOrc will automatically restart replication if it is not running.
+
+## What is semi-sync replication?
+
+Semi-sync replication enables you to prevent your primary from acknowledging a transaction to the client until a replica confirms that it has received all the changes. This adds an extra guarantee that at least one other machine has a copy of the changes.
+
+This addresses the problem of a combination of lagging replication and network issues resulting in data loss. With semi-sync replication, even if you have network issues you shouldn’t lose your data.
+
+Please do note that when using semi-sync replication you will have to wait for your data to flow from the primary to the replica and then get a confirmation back to the primary. Thus each transaction may take longer. The length of time depends on the round trip time from the primary to the replica.
+
+## Why would I use semi-sync replication?
+
+Semi-sync replication ensures data durability between the primary and at least one replica. Hardware failures are unavoidable but don't need to result in data loss if you run with semi-sync replication.
+
+
+---
+title: Advanced Configuration
+docs_nav_disable_expand: true
+weight: 10
+---
+
+
+
+---
+title: Compatibility
+weight: 2
+---
+
+## What versions of MySQL or MariaDB work with Vitess?
+
+Please refer to our [Supported Databases](https://vitess.io/docs/overview/supported-databases/) for the most up-to-date information.
+
+## What does it mean to say that Vitess "is MySQL compatible"? Will my application "just work"?
+
+Vitess supports much of MySQL, with some limitations. **Depending on your MySQL setup you will need to adjust queries that utilize any of the current unsupported cases.**
+
+For SQL syntax there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json). 
+
+There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax.
+
+## How is Vitess different from MySQL?
+
+MySQL is a popular open source database solution. MySQL delivers a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server. 
+However, MySQL starts running into limitations with large data sizes or large numbers of concurrent users.
+
+Vitess is a database scaling system designed to be used with MySQL. It enables deploying, scaling and managing large clusters of MySQL instances with built-in sharding, high availability and connection pooling.
+
+## How is Vitess different from RDS for MySQL?
+
+RDS for MySQL is a managed service from AWS which has many of the same limitations as open source or enterprise MySQL.
+
+## How is Vitess different from AWS Aurora for MySQL?
+
+AWS Aurora for MySQL is a managed service from AWS which can scale beyond the limitations of RDS for MySQL. However, it cannot scale to the same extent as Vitess.
+
+## Are foreign keys supported in Vitess?
+
+We generally discourage the use of foreign keys, and more specifically foreign key constraints. There may be unexpected consequences when using them in sharded keyspaces.
+However, you can use foreign key constraints when their scope is contained within a shard or unsharded keyspace. You will need to [configure](https://vitess.io/docs/user-guides/vschema-guide/foreign-keys/) Vitess with the desired level of support.
+Please note that if you do shard or re-shard an existing keyspqce with foreign keys, you will need to take extra steps to confirm they are working as intended. 
+
+
+
+---
+title: Components
+weight: 3
+---
+
+## What is VTGate and how does it work?
+
+VTGate is a lightweight proxy server that sits between your application and your shards, which contain your data. VTGates are essentially stateless and in many cases, you can scale with query load by adding more VTGate instances.
+Some of the main functions performed by VTGate are as follows:
+* Keeps track of the Vitess cluster state, and route traffic accordingly.
+* Parses SQL queries fully, and combines that understanding with Vitess VSchema to direct queries to the appropriate VTTablet (or set of VTTablets) and returns consolidated results back to the client.
+* Supports both the MySQL Protocol and the gRPC protocol. Thus, your applications can connect to VTGate as if it is a MySQL Server.
+* Is aware of failovers in underlying shards, and performs buffering of queries to reduce application impact.
+
+## What is VTTablet? How does it work with MySQL?
+
+A VTTablet is the Vitess component that both front-ends and, optionally, controls a running MySQL server. It accepts queries over gRPC and translates the queries back to MySQL, as well as speaking to MySQL to issue commands to control replication, take backups, etc.
+
+Things to note about VTTablet are:
+* Each mysqld needs a VTTablet that manages it.
+* VTTablet tracks long running queries and kills them when they exceed a defined threshold.
+* The combination of a VTTablet process and a MySQL process is called a Tablet.
+
+Please note that in some cases VTTablets may be deployed as [unmanaged/remote or partially managed](https://vitess.io/docs/reference/programs/vttablet/#managed-mysql).
+The recommendation is to start with unmanaged mode but eventually migrate to managed mode. Operations like resharding are possible only with vitess-managed MySQL servers.
+
+## What is VTCtld?
+
+VTCtld is a Vitess server component that can perform various Vitess cluster- and component-level operations on behalf of an administrative user. You can interact with VTCtld via a web UI, or via an gRPC interface using the vtctldclient CLI tool.
+It has an administrative UI called VTAdmin.
+
+Some of the administrative actions VTCtld can perform include: reparents (failovers), backups, shard splits, resharding, and shard merges.
+
+## What is a keyspace? 
+
+A keyspace is a logical database. Typically, a keyspace maps to multiple MySQL instances regardless of sharding. This is because it is recommended to run multiple replicas even for an unsharded keyspace. In other words, a keyspace appears as a single database from the application's viewpoint.
+
+Reading data from a keyspace is just like reading from a MySQL database.
+
+## What is vtctldclient?
+
+This is a Vitess CLI used to execute gRPC commands against VTCtld. It is the most common way to perform administrative commands against a running Vitess cluster. 
+
+## What is a cell? How does it work?
+
+A cell is a group of servers and associated network infrastructure co-located in an area, and isolated from failures in other cells. It is typically either a full data center or a subset of a data center, sometimes called a zone or availability zone. Vitess gracefully handles cell-level failures, such as when a cell is isolated from other cells by a network failure. A useful way to think of a cell is as a failure domain.
+
+Each cell in a Vitess implementation has a local Topology Service, which is hosted in that cell. The Topology Service contains most of the information about the Vitess tablets in its cell. This enables a cell to be taken down and rebuilt as a unit.
+
+Vitess limits cross-cell traffic for both data and metadata. Vitess currently serves reads only from the local cell. Writes will go cross-cell as necessary, to wherever the primary for that shard resides.
+
+## What is a tablet? What are the types?
+
+A tablet is a combination of a mysqld process and a corresponding VTTablet process, usually running on the same machine. Each tablet is assigned a tablet type, which specifies what role it currently performs. The main tablet types are listed below:
+
+* PRIMARY - A tablet that contains a MySQL instance that is currently the MySQL primary for its shard.
+* REPLICA - A tablet that contains a MySQL replica that is eligible to be promoted to primary. Conventionally, these are reserved for serving live, user-facing read-only requests (like from the website’s frontend).
+* RDONLY - A tablet that contains a MySQL replica that cannot be promoted to primary. Conventionally, these are used for background processing jobs, such as taking backups, dumping data to other systems, heavy analytical queries, and resharding.
+
+There are some other tablet types like `BACKUP` and `RESTORE`. For information on how to use tablets please review this [user guide](https://vitess.io/docs/user-guides/configuration-basic/vttablet-mysql/).
+
+## What is a shard?
+
+A shard is a physical division within a keyspace;  i.e. how data is split across multiple MySQL instances. A shard typically consists of one MySQL primary and one or more MySQL replicas.
+
+Each MySQL instance within a shard has the same data, if the effect of MySQL replication lag is ignored. The replicas can serve read-only traffic, execute long-running queries from data analysis tools, or perform administrative tasks.
+
+An unsharded keyspace always has only a single shard.
+
+
+---
+title: Metrics
+weight: 7
+---
+
+## How can I monitor or get metrics from Vitess?
+
+All Vitess components have a web UI that you can access to see the state of each component.
+
+The first place to look is the `/debug/status` page.
+
+* This is the main landing page for a VTGate, which displays the status of a particular server. A list of tablets this VTGate process is connected to is also displayed, as this is the list of tablets that can potentially serve queries.
+
+A second place to look is the `/debug/vars` page.  For example, for VTGate, this page contains the following items:
+
+* VTGateApi - This is the main histogram variable to track for VTGates. It gives you a breakdown of all queries by command, keyspace, and type.
+* HealthcheckConnections - It shows the number of tablet connections for query/healthcheck per keyspace, shard, and tablet type.
+
+There are two other pages you can use to get monitoring information from Vitess in the VTGate web UI:
+
+* `/debug/query_plans` - This URL gives you all the query plans for queries going through VTGate.
+* `/debug/vschema` - This URL shows the VSchema as loaded by VTGate.
+
+VTTablet has a similar web UI.
+
+Vitess component metrics can also be scraped via /metrics. This will provide a Prometheus-format metric dump that is updated continuously. This is the recommended way to collect metrics from Vitess.
+
+## How do you integrate Prometheus and Vitess?
+
+There is an Prometheus exporter that is on by default that enables you to configure a Prometheus compatible scraper to grab data from the various Vitess components. All Vitess components export their metrics on their http port at `/metrics`. 
+
+If your Vitess configuration includes running the Vitess Operator on Kubernetes, then you can have Prometheus or a Prometheus compatible agent running in your Kubernetes cluster. This would then scrape the metrics from Vitess automatically, as it would be run on the ports advertised and on our standard `/metrics` page. 
+
+You can read more about getting the metrics into Prometheus [here](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config).
+
+
+---
+title: Overview
+weight: 1
+---
+
+## What is Vitess?
+
+**Vitess is a database solution for deploying, scaling and managing large clusters of database instances.** 
+
+It is architected to run as effectively in a public or private cloud architecture as it does on dedicated hardware. It combines and extends many SQL features with the scalability of a NoSQL database. Vitess can help you with the following problems:
+
+* Scaling a SQL database by allowing you to shard it, while keeping your application changes to a minimum.
+* Migrating from bare metal to a private or public cloud.
+* Deploying and managing a large number of SQL database instances.
+
+## What is Vitess and MySQL's relationship?
+
+**Vitess is not a database itself, instead it is a distributed database system built around MySQL.**
+
+Vitess provides a sharding system for MySQL, as well as some operational management for its instances. Vitess will assist with actions like sharding, managing backup and restore, and adding replicas. 
+
+However, it is important to note that implementers of Vitess will need to provide their own MySQL and perform their own MySQL management.  The amount of MySQL management required depends on if Vitess is configured to run with "managed" MySQL or "external" MySQL.
+
+Vitess can run against various flavors/implementations of MySQL, e.g. MySQL Community Edition, MySQL Enterprise Edition and Percona Server.  Vitess can also be used with many Cloud deployments of MySQL, e.g. AWS RDS, AWS Aurora, GCP Cloud SQL, etc.
+
+## How can I migrate out of Vitess? 
+
+In order to migrate out of Vitess you will need to take a backup of your data using one of the three possible methods: backup and restore, mysqldump, and go-mydumper.
+
+We recommend following the [Backup and Restore](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/) guide for regular backups in order to migrate out of Vitess. This method is performed directly on the tablet servers and is more efficient and safer for databases of any significant size. The downside is that this is a physical MySQL instance backup, and needs to be restored accordingly.
+
+Both mysqldump and go-mydumper are not typically suitable for production backups. This is because Vitess does not implement all the locking constructs across a sharded database that are necessary to do a consistent logical backup while writing to the database.  However, it may be appropriate if you are able to stop all writes to Vitess for the period that the dump process is running;  or you are just backing up tables that are not receiving any writes. You can read more about exporting data from Vitess [here](https://vitess.io/docs/user-guides/configuration-basic/exporting-data/).
+
+## How do Vitess replicas stay in sync? Do replicas use VReplication?
+
+Every shard in Vitess uses normal MySQL replication to replicate changes from the primary for that shard to the replica(s). Vitess can use asynchronous MySQL replication (the default), but can also be configured to use semi-synchronous MySQL replication in order to provide data durability in the presence of failures.
+
+VReplication is used internally in Vitess for features like resharding, migrating tables across keyspaces, and materialized views. It is not used directly to keep replicas in sync with a primary.
+
+## What are the main components of Vitess? 
+
+Vitess consists of a number of server processes and command-line utilities and is backed by a consistent metadata store. The main server components consist of: 
+
+* VTGate
+* Topology server (etcd)
+* VTCtld
+* Tablets which are made up of VTTablets and mysqld
+
+The diagram below illustrates Vitess’ components and their location within Vitess’ architecture:
+
+<img alt="Vitess Components" src="/img/vitess-components.png"  width=100%>
+
+## Are microservices recommended for scaling? 
+
+It’s better to think of microservices as a design principle rather than as a scaling trick. This architecture is more tailored to improving resilience and flexibility for deployment, by breaking up monolithic deployments into more loosely coupled, isolated elements. The complexity of managing resources for horizontal sharding aligns closely with the challenges of managing resources in a microservices architecture.
+
+Because of this added management complexity, Vitess is a good fit for a container orchestration environment to offset some of this additional complexity. Vitess is commonly deployed/managed in containers using the Vitess Operator for Kubernetes.
+
+In short, horizontally scaling MySQL is made possible by Vitess, both in microservices architectures, as well as more traditional environments.
+
+It is not unusual for a well-configured single-server MySQL installation to serve hundreds of thousands of queries per second, so keep in mind that any scaling challenges you might face could also be resolved by optimizing your code, queries, schema and/or MySQL configuration.
+
+One common challenge faced by users implementing a large-scale microservices architecture, while still keeping a unified database architecture, is that the number of MySQL protocol client connections to the central database can become overwhelming, even with client-side connection pooling.  Vitess handles this by effectively introducing additional layers of connection pooling, ensuring that the backend MySQL instances are not overwhelmed.
+
+
+---
+title: Topology
+weight: 4
+---
+
+## What is the topology service? How does it work?
+
+The Topology Service is a set of backend processes. This service is exposed to all Vitess components. It delivers a key/value service that is highly available and consistent, while being offset by having higher latency cost and very low throughput. The Topology Service is used for several things by Vitess:
+
+* It enables tablets to coordinate among themselves as a cluster.
+* It enables VTGate to discover tablets, so it knows where to route queries.
+* It stores Vitess configuration provided by the administrator which is required by the different components in the Vitess cluster and that must persist between server restarts.
+
+The main functions the Topology Service provides are:
+
+* It is both a repository for topology metadata and a distributed lock manager. 
+* It is used to store configuration data about the Vitess cluster. It stores small data structures (a few hundred bytes) per object.
+	* E.g. information about the Keyspaces, the Shards, the Tablets, the Replication Graph, and the Serving Graph. 
+* It supports a watch interface that signals a client when changes occur on an object. This is used, for instance, by VTGate to know when the VSchema changes.
+* It supports primary election.
+* It supports quorum reads and writes.
+
+## What Topology servers can I use with Vitess?
+
+Vitess uses a plugin implementation to support multiple backend technologies for the Topology Service. The servers currently supported are as follows:
+* etcd
+* ZooKeeper
+
+The Topology Service interfaces are defined in our code in go/vt/topo/, specific implementations are in go/vt/topo/<name>, and we also have a set of unit tests for it in go/vt/topo/test.
+
+{{< info >}}
+If starting from scratch, please use the `etcd` implementation.
+{{< /info >}}
+
+## How do I choose which topology server to use?
+
+The first question to consider is: do you use one already or are you required to use a specific one? If the answer to that question is yes, then you should likely implement that rather than adding a new server to run Vitess.
+However, in large implementations, it makes sense to run a separate topology server dedicated to Vitess. This avoids "noisy neighbor" problems.
+
+By default, we recommend that you use etcd if you can, otherwise you may use ZooKeeper.
+
+## How do I implement etcd (etcd2)?
+
+If you want to implement etcd we recommend following the steps on Vitess’ documentation [here](https://vitess.io/docs/reference/features/topology-service/#etcd-etcd2-implementation-new-version-of-etcd).
+
+## How do I implement Zookeeper zk2?
+
+If you want to implement zk2 we recommend following the steps on Vitess’ documentation [here](https://vitess.io/docs/reference/features/topology-service/#zookeeper-zk2-implementation).
+
+## How do I migrate between implementations?
+
+We provide the topo2topo utility to migrate between one implementation and another of the topology service. 
+
+This process is explained in Vitess’ documentation [here](https://vitess.io/docs/reference/features/topology-service/#migration-between-implementations).
+
+If your migration is more complex, or has special requirements, we also support a ‘tee’ implementation of the topo service interface. It is defined in go/vt/topo/helpers/tee.go. It allows communicating to two topo services, and the migration uses multiple phases.
+
+This process is explained in Vitess’ documentation [here](https://vitess.io/docs/reference/features/topology-service/#migration-using-the-tee-implementation).
+
+
+---
+title: VReplication
+weight: 6
+---
+
+## What is VReplication? How does it work?
+
+VReplication is used as a building block for a number of features in Vitess. It works as a stream or combination of streams that establish replication from a source keyspace/shard into a target keyspace/shard. A given stream can replicate multiple tables. It allows Vitess to keep the data being copied in-sync by using a combination of copying rows and filtered replication.
+
+VReplication works via the following process:
+
+1. It first analyzes the source table on the source shard and identifies what rows it needs to copy. 
+2. It then very briefly locks the table and records the current GTID replication position on the source database. After recording the current GTID position, VReplication then unlocks the table again.
+3. It selects all rows and columns that match a specified filter from GTID value 0 onward and makes a copy of the results.
+4. It then streams the copy over to the target shard to start inserting rows. VReplication will keep copying for a specified period of time (default 1 hour), to attempt to finish the copy. 
+5. If the copying phase on the target hasn’t finished in an hour, it will stop and go back to the table in order to pick up any changes that have been made since it started copying.
+6. It knows what the GTID was when it started copying and what the GTID is now. This enables it to determine what events have occurred after it performed the first select and copy. 
+7. It will then filter out all the events except the ones that pertain to the relevant table and will apply the changes to the destination table.
+
+This process then repeats until VReplication finishes copying the whole table. After the copying process finishes VReplication will transition to filtered replication to keep the table in sync between the source and the target. 
+
+## How can I use VReplication?
+
+There are a number of higher level commands like MoveTables, Reshard, and Materialize that create VReplication streams behind the scenes of the command. By using these higher level commands, Vitess creates VReplication rules for the user. Further use cases are listed out [here](https://vitess.io/docs/reference/features/vreplication/).
+
+For more information on [MoveTables](https://vitess.io/docs/user-guides/migration/move-tables/) and [Materialized Views](https://vitess.io/docs/user-guides/migration/materialize/) please follow the links provided.
+
+It is possible to create VReplication rules by hand, but we don’t recommend doing that as it can be challenging to configure the rules correctly.
+
+
+---
+title: VSchema and Vindexes
+weight: 5
+---
+
+## What is a VSchema?
+
+VSchema is short for Vitess Schema and it describes how to shard data within Vitess. 
+
+In contrast to a traditional database schema that contains metadata about tables, a VSchema contains metadata about how tables are organized across shards. This information is used for routing queries and also during resharding operations. 
+
+Simply put, it contains the information needed to make Vitess look and act like a single database server.
+
+For example, the VSchema will contain the sharding key for each sharded table. When the application issues a query with a WHERE clause that references the key, the VSchema will be used to route the query to the appropriate shard.
+
+## What is a Vindex and how does it work?
+
+A Vindex provides a way to map a column value to a keyspace ID. Since each shard in Vitess covers a range of keyspace ID values, this mapping can be used to identify which shard contains a row.
+
+The advantages of Vindexes stem from their flexibility:
+
+* A table can have multiple Vindexes.
+* Vindexes can be NonUnique, which allows a column value to yield multiple keyspace IDs.
+* Vindexes can be a simple function or be based on a lookup table.
+* Vindexes can be shared across multiple tables.
+* Custom Vindexes can be created and used, and Vitess will still know how to reshard using such Vindexes.
+
+The Vschema contains the Vindex for any sharded tables. Every Vschema must have at least one Vindex, called the Primary Vindex, defined. A variety of other Vindexes are also available to choose from, with different trade-offs, and you can choose one that best suits your needs. You can read more about other Vindexes [here](https://vitess.io/docs/reference/features/vindexes/).
+
+## What is a primary Vindex and how does it work?
+
+The Primary Vindex for a table is analogous to a database primary key. 
+
+Every sharded table must have one defined. A Primary Vindex must be unique: given an input value, it must produce a single keyspace ID. At the time of an insert to the table, the unique mapping produced by the Primary Vindex determines the target shard for the inserted row.
+
+In Vitess, the choice of Vindex allows control of how a column value maps to a keyspace ID. In other words, a Primary Vindex in Vitess not only defines the Sharding Key, but also decides the Sharding Strategy.
+
+Uniqueness for a Primary Vindex does not mean that the column has to be a primary key or unique key in the MySQL schema for the underlying shard. You can have multiple rows that map to the same keyspace ID. The Vindex uniqueness constraint only ensures that all rows for a keyspace ID end up in the same shard.
+
+## How do I create a VSchema?
+
+The ease of creation of a VSchema depends heavily on now your data model is constructed. 
+
+For some data models, especially smaller and less complex ones, it can be less challenging to determine how to split the data between shards. A clear sharding key would be a column that is on most of the tables in your data model. If there is a clear sharding key then creating VSchema is as straightforward as specifying that column as the primary Vindex for each table. Common primary Vindexes tend to be user ID or customer ID.
+
+For more complex data models most will have to investigate the patterns of common queries in order to determine what sharding keys to use. When investigating the most common queries you must identify what you want to optimize, as this influences heavily the determination of the sharding keys.
+
+For example if you have a query accessing a table with two or more distinct query keys then it may be necessary to create a lookupvindex for the table to accommodate that query pattern.
+
+Please do keep in mind that you don’t have to have Vindex to cover every query pattern;  just the most common. If you adhere to an 80:20 rule, where you scatter 20% of your queries across shards you shouldn’t see any major impacts depending on how you optimized your sharding keys.
+
+## When do I need to use a VSchema?
+
+For a very trivial setup where there is only one unsharded keyspace, there is no need to specify a VSchema because Vitess will know that there is nowhere to route a query except to the single shard.
+
+However, once you have sharding, having a VSchema becomes a necessity. This is because a VSchema is needed to locate and place rows in each table in a sharded keyspace.
+
+The Vitess distribution has a demo of VSchema operation [here](https://github.com/vitessio/vitess/tree/master/examples/demo).
+
+
+---
+title: Getting Started
+docs_nav_disable_expand: true
+weight: 1
+---
+
+
+
+---
+title: Advanced Migrations
+weight: 2
+---
+
+## How do I migrate to Vitess from a hosted MySQL?
+
+If you are running a hosted MySQL like RDS on AWS, CloudSQL on GCP, or Azure managed MySQL, because you are not coming from MySQL you have to use either the ‘Stop-the-world’ method or the method using VReplication setup in front of the existing external database.  You can read more about those two methods [here](https://vitess.io/docs/user-guides/migration/migrate-data/).
+
+There is no option to do an application level migration. 
+
+The biggest challenge with this sort of migration is you must be able to access the source database from the location where you want to put the target database. You will need to ensure this configuration constraint is resolved and set up prior to any sort of migration.
+
+## What is Vstream and how does it work?
+
+VStream is a change notification service accessible via VTGate. The purpose of VStream is to provide equivalent information to the MySQL binary logs from the underlying MySQL shards. 
+
+gRPC clients, including Vitess components like VTTablets, can subscribe to a VStream to receive change events from other shards. The VStream pulls events from one or more VStreamer instances on VTTablet instances, which in turn pulls events from the binary log of the underlying MySQL instance. 
+
+This allows for efficient execution of functions such as VReplication where a subscriber can indirectly receive events from the binary logs of one or more MySQL instance shards, and then apply it to a target instance. 
+
+
+---
+title: Overview
+weight: 1
+---
+
+## How do I migrate my data to Vitess?
+
+There are two main parts to migrating your data to Vitess: migrating the actual data and repointing the application. The answer here will focus primarily on the methods that can be used to migrate your data into Vitess.
+
+There are three different methods to migrate your data into Vitess. Choosing the appropriate option depends on several factors like:
+
+- The nature of the application accessing the MySQL database
+- The size of the MySQL database to be migrated
+- The load, especially the write load, on the MySQL database
+- Your tolerance for downtime during the migration of data
+- Whether you require the ability to reverse the migration if need be
+- The network level configuration of your components
+
+The three different methods are:
+
+- ‘Stop-the-world’
+- VReplication from Vitess setup in front of the existing external MySQL database
+- Application-level migration
+
+Choosing the Right Method
+
+The first and most important point to consider when choosing the right method is whether you can or cannot interconnect between components on your network. If you cannot, or do not wish to, perform extra steps to ensure interconnectivity then you will need to use the ‘Stop-the-world’ method. 
+
+If you can ensure interconnectivity and that the VTTablets are in the same Vitess cluster, then for cases when larger amounts of downtime are not an option you will want to use VReplication with either Movetables or Materialize. 
+
+You can read more about each method [here](https://vitess.io/docs/user-guides/migration/migrate-data/).
+
+## What is VTExplain?
+
+VTExplain is a command line tool which provides information on how Vitess plans to execute a particular query. It can be used to validate queries for compatibility with Vitess.
+
+For a more detailed walkthrough of VTExplain please go [here](https://vitess.io/docs/user-guides/sql/vtexplain/).
+
+## Analyze queries for issues given a Vschema
+
+To check your queries for issues you will need to follow these general steps. For a more detailed process that includes examples please refer to the documentation [here](https://vitess.io/docs/user-guides/sql/vtexplain/).
+
+First you will need to gather most, if not all, of the queries that are sent to your current production database tracked over an extended period of time. You may need to track your sent queries for days or weeks depending on your set up. You will also need to normalize the queries you will be analyzing. To do this you can use any MySQL monitoring tool like VividCortex, Monyog or PMM. 
+
+Once you have the full list of normalized queries you will need to filter out any that are not supported or are coming from other sources. Example unsupported queries are listed in the documentation [here](https://vitess.io/docs/reference/compatibility/mysql-compatibility/).
+
+After filtering the list of queries you will need to generate and populate some fake values. To do this we have an example pipeline in the documentation [here](https://vitess.io/docs/user-guides/sql/vtexplain-in-bulk/#3-populate-fake-values-for-your-queries).
+
+Once you have the fake values in place you can then run the [vtexplain](https://vitess.io/docs/faq/migrating/overview/#what-is-vtexplain) command against every query and then inspect the output for errors. You will likely want to use a script to do this. We have an example script as well as some setup steps in the documentation [here](https://vitess.io/docs/reference/programs/vtexplain/#example-usage).
+
+Further case by case examples are available in the documentation starting [here](https://vitess.io/docs/user-guides/sql/vtexplain-in-bulk/).
+
+vtexplain can also be used to try different sharding scenarios before deciding on one.
+
+
+---
+title: Query Rewriting
+weight: 3
+---
+
+## How can tables be migrated from using auto-increment to sequences?
+
+Auto-increment columns do not ensure uniqueness for sharded tables. Instead you will need to use Vitess sequences to achieve the same functionality. 
+
+Sequences are based on a MySQL table and use a single value in that table to describe which values the sequence should have next. Thus, the sequence table is an unsharded single row table that Vitess can use to generate monotonically increasing ids. 
+
+Sequence tables must be specified in the VSchema, and then tied to table columns. Once they are associated, an insert on that table will transparently fetch an id from the sequence table, fill in the value, and route the row to the appropriate shard. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table.
+
+To create a sequence you will need to follow the steps [here](https://vitess.io/docs/reference/features/vitess-sequences/#creating-a-sequence).
+
+## Is there a list of supported and unsupported queries?
+
+Please see "SQL Syntax" under [MySQL Compatibility](https://vitess.io/docs/reference/compatibility/mysql-compatibility/).
+
+## What special functions can Vitess handle?
+
+We list out the special functions that Vitess handles without delegating to MySQL [here](https://vitess.io/docs/concepts/query-rewriting/#special-functions).
+
+There's a workaround if you want to use a JPA like Hibernate/Eclipselink to talk to Vitess.  
+
+Rather than using `GenerationType.IDENTITY` you can use Eclipselink QuerySequence to define a query directly to Vitess Sequences tables. This not only prevents `SELECT LAST_INSERT_ID()` calls but also can reduce the number of database trips since the application could request a bunch of IDs from Vitess. Potentially around 1000, so this setup will make only one call per 1000 inserts.
+
+
+---
+title: Migrating
+docs_nav_disable_expand: true
+weight: 2
+---
+
+
+
+---
+title: Backup and Restore
+weight: 4
+---
+
+## How do backups work in vitess?
+
+Backup and Restore are integrated features provided by tablets managed by Vitess. Vitess uses backups for provisioning new tablets in an existing shard.
+
+Vitess supports plugins for a number of Backup Storage Services and Backup Engines. The supported plugins are listed in the [documentation](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/overview/#backup-storage-services).
+
+## What is XtraBackup and how does Vitess use it?
+
+Percona XtraBackup is an open source backup utility for MySQL. You can delve into Percona’s [documentation](https://www.percona.com/doc/percona-xtrabackup/2.4/intro.html) on XtraBackup.
+
+XtraBackup can be used as a backup engine in Vitess. Using it requires configuration using [command-line flags](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/creating-a-backup/).
+
+## What are my options to restore in vitess?
+
+When a tablet starts, Vitess checks the value of the `--restore_from_backup` command-line flag to determine whether to restore a backup to that tablet.
+
+- If the flag is present, Vitess tries to restore the most recent backup from the Backup Storage system when starting the tablet.
+- If the flag is absent, Vitess does not try to restore a backup to the tablet. The MYSQL database associated with the tablet will be empty.
+
+For more information on restoring and managing backups please follow the link [here](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/bootstrap-and-restore/#restoring-a-backup).
+
+
+---
+title: Configuration
+weight: 2
+---
+
+## How do I connect to vtgate using MySQL protocol?
+
+In the example [vtgate-up.sh](https://github.com/vitessio/vitess/blob/main/examples/common/scripts/vtgate-up.sh) script you'll see the following lines:
+
+```sh
+--mysql_server_port $mysql_server_port \
+--mysql_server_socket_path $mysql_server_socket_path \
+--mysql_auth_server_static_file "./mysql_auth_server_static_creds.json" \
+```
+
+In this example, vtgate accepts MySQL connections on port 15306 and the authentication information is stored in the json file. You can then connect to it using the following command:
+
+```sh
+mysql -h 127.0.0.1 -P 15306 -u mysql_user --password=mysql_password
+```
+
+## Must the application know about the sharding scheme in Vitess?
+
+The application does not need to know about how the data is sharded. This information is stored in a VSchema which the VTGate servers use to automatically route your queries. This allows the application to connect to Vitess and use it as if it’s a single giant database server.
+
+## Can the primary/replica be pinned to one region?
+
+Yes, you can keep a primary/replica in the primary region and can keep a read only replica in another region.
+
+## Can data replication from a primary region cell be controlled?
+
+If you want to replicate data from a primary region cell to secondary region cell you would need to use [VReplication](https://vitess.io/docs/reference/vreplication/vreplication/).
+
+Please note that Vitess has some regulatory requirements that certain data can't leave the primary region.
+
+## Can I change the default database name?
+
+Yes. You can start vttablet with the `-init_db_name_override` command line option to specify a different db name. There is no downside to performing this override.
+
+
+---
+title: Kubernetes
+weight: 5
+---
+
+## How does Vitess work with Kubernetes?
+
+Vitess can run as a Kubernetes-aware cloud native distributed database. This can be one of the easiest ways to run Vitess.
+
+Kubernetes handles scheduling onto nodes in a compute cluster, actively manages workloads on those nodes, and groups containers comprising an application for easy management and discovery. Vitess does not do this auto-provisioning and thus integrates nicely with Kubernetes.
+
+PlanetScale provides and supports an open-source [Kubernetes operator](https://github.com/planetscale/vitess-operator) for Vitess.
+
+## How can I resize my Kubernetes storage when using Vitess?
+
+If you use Vitess with Kubernetes and need to grow your disk space, Kubernetes has capabilities to resize persistent storage. 
+These are specific to your Kubernetes provider, please refer to their documentation.
+As an alternative, you can migrate to new storage by performing a series of planned vertical or horizontal sharding operations.
+
+In general, persistent storage in Kubernetes can be resized up, but not down. Host local storage cannot be resized.
+Shrinking storage will require spinning up new tablets with the desired (smaller) sized persistent storage, restoring them from backups and decommissioning the old tablets.
+
+
+## How do I switch database technologies in Kubernetes?
+
+In your tablet definitions of your cluster .yaml file(s), you can specify a different container for the database. You will need to do this for each replica in a shard.  
+
+You will add a `datastore` field and populate it with a `type` and a `container`. 
+
+The only requirement for this is that the container needs to have a standard MySQL deployment. For example, the following block should work to set up Percona for your datastore:
+
+```sh
+  - type: "replica"
+          datastore:
+            type: mysql
+            container: "percona/percona-server:5.7"
+```
+
+
+---
+title: Overview
+weight: 1
+---
+
+## Am I really limited to 250 GB as my tablet size? Why?
+
+Vitess recommends provisioning shard sizes to approximately 250GB. This is not a hard-limit, and is driven primarily by the recovery time should an instance fail. With 250GB a full-recovery from backup is expected within less than 15 minutes. 
+
+For most workloads this results in shards instances with relatively few CPU cores and lighter memory requirements, which tend to be more economical than running large instance sizes.
+
+For more information there is an in depth blog article [here](https://vitess.io/blog/2019-09-03-why-250gb-shards/).
+
+## How does Vitess work with AWS, Azure, GCP?
+
+Vitess can run in virtual machines on AWS, Azure, and GCP or in Kubernetes on those platforms. Vitess can run in two different manners on those platforms using either Kubernetes on virtual machines or using cloud Kubernetes managed service in AWS EKS, Azure AKS, or GCP GKE.
+
+## What are my options to run Vitess? 
+
+Vitess can run on bare metal, virtual machines, and kubernetes. It also doesn’t matter if your preference is for on-premises or in the cloud as Vitess can accommodate either option.
+
+## Does Vitess only work on Kubernetes?
+
+Vitess runs on a lot of different options. Kubernetes is only one of the available options. Vitess can also be run on AWS, GCP and bare metal configurations.
+
+## What is the Vitess Operator?
+
+The Vitess Operator is open source and is on [GitHub](https://github.com/planetscale/vitess-operator). You can see the repository for information on licensing and contribution.
+
+The Vitess Operator automates the management and maintenance work of Vitess on Kubernetes by automating the tasks below:
+
+- Deploy any number of Vitess clusters, cells, keyspaces, shards, and tablets to scale both reads and writes either horizontally or vertically.
+- Deploy overlapping shards for Vitess resharding, allowing zero-downtime resizing of shards.
+- Trigger manual planned failover via Kubernetes annotation.
+- Replicate data across multiple Availability Zones in a single Kubernetes cluster to support immediate failover of read/write traffic to recover from loss of an Availability Zone.
+- Automatically roll out updates to Vitess-level user credentials.
+
+For information on using the Vitess Operator with AWS please follow the link [here](https://docs.planetscale.com/vitess-operator/aws-quickstart). For Google Cloud Platform please follow the link [here](https://docs.planetscale.com/vitess-operator/gcp-quickstart). 
+
+## How much resources (memory, CPU, disk) does Vitess use?
+
+**CPU**
+
+Vitess components (excluding the underlying MySQL server) tend to be CPU-bound processes. It is recommended to:
+
+* Allocate 2-4 CPU cores for each VTGate server.
+* And allocate the same number of cores for VTTablet as with MySQLd.
+  * If you are provisioning for a new workload, we recommend projecting that MySQLd will require 1 core per 1500 QPS.
+
+Assuming tablets are kept to the recommended size of 250GB:
+* Start with a baseline CPU requirement of 2-4 cores for MySQLd
+* And allocate 2-4 cores for the VTTablet process.
+
+{{< info >}}
+Note that this is very workload-dependent. We recommend testing the configuration for yourself as performance can vary depending on your query pattern, query size, concurrency, etc.
+{{< /info >}}
+
+**Memory**
+
+The memory requirements for VTGate and VTTablet servers will depend on QPS and query result set sizes. We recommend:
+
+* Provisioning a baseline of 1GB per core.
+* Allocating additional memory if you are increasing the Vitess default row limits and/or expect many concurrent queries returning large result sets. Note that this may not be necessary if your large result set queries use streaming.
+
+**Latency**
+
+The impact of network latency can be a factor when migrating from MySQL to Vitess. A simple rule of thumb is to estimate 2ms of round trip latency added to each query.  This may be higher in a cloud environment, depending on your choice of load balancer, availability zone placement, etc.
+
+**Topology Service**
+
+For estimating CPU/memory/disk requirements of your chosen Topology Service, you can use the minimum requirements recommended by the topology server implementation.
+
+## How do reparents work in Vitess?
+
+Reparenting is the process of changing a shard’s primary tablet from one host to another or changing a replica tablet to have a different primary. Reparenting can be initiated manually or it can occur automatically in response to particular database conditions. Vitess supports two types of reparenting: [Active reparenting](https://vitess.io/docs/user-guides/configuration-advanced/reparenting/#active-reparenting) and [External reparenting](https://vitess.io/docs/user-guides/configuration-advanced/reparenting/#external-reparenting).
+- Active reparenting occurs when Vitess manages the entire reparenting process. There are two types of active reparenting that can be done: [Planned reparenting](https://vitess.io/docs/user-guides/configuration-advanced/reparenting/#plannedreparentshard-planned-reparenting) and [Emergency reparenting](https://vitess.io/docs/user-guides/configuration-advanced/reparenting/#emergencyreparentshard-emergency-reparenting).
+- External reparenting occurs when another tool handles the reparenting process, and Vitess just updates its components to accurately reflect the new primary-replica relationships.
+
+You can read more about reparenting in Vitess [here](https://vitess.io/docs/user-guides/configuration-advanced/reparenting/).
+
+
+
+---
+title: Queries
+weight: 3
+---
+
+## How can I perform a full table scan without the row limit per query?
+
+Vitess supports different modes. In OLTP mode, the result size is typically limited to a preset number (10,000 rows by default). This limit can be adjusted based on your needs.
+
+However, OLAP mode has no limit to the number of rows returned. In order to change to this mode, you may issue the following command before executing your query:
+
+```sql
+set workload='olap'
+```
+
+You can also set the workload to `dba`, which allows you to override the implicit timeouts that exist in vttablet. However, this mode should be used judiciously as it can block shutdown and reparent commands.
+
+The general convention is to send OLTP queries to `REPLICA` tablet types, and OLAP queries to `RDONLY`.
+
+## Can I choose between primary and replica for query routing?
+
+You can qualify the keyspace name with the desired tablet type using the `@` suffix. This can be specified as part of the connection as the database name, or can be changed on the fly through the `USE` command.
+
+For example, `ks@primary` will select `ks` as the default keyspace with all queries being sent to the primary. `ks@replica` will load balance requests across all `REPLICA` tablets, and `ks@rdonly` will choose `RDONLY`.
+
+You can also specify the database name as `@primary`, `@replica` etc., which means that no default keyspace is specified, but that the requests are for the specified tablet type.
+
+If no tablet type is specified, then VTGate chooses its default, which can be overridden with the `--default_tablet_type` command line argument.
+
+## Can I address a specific shard if I want to?
+
+If necessary, you can access a specific shard by connecting to it using the shard-specific database name, or issuing a `USE` statement to switch to it if already connected to vtgate. 
+
+For a keyspace `ks` and shard `-80`, you would use the database name `ks:-80`. This is called manual shard targeting. Please note that shard targeting is considered an advanced feature and should be used with caution.
+In particular, it is possible to insert rows into the wrong shard by using shard targeting.
+
+## Can I set a session variable query timeout?
+
+If you would like something similar to `[max_execution_time]`(https://dev.mysql.com/blog-archive/server-side-select-statement-timeouts/) you can set the vttablet command line flag as follows: `-queryserver-config-query-timeout=15`. This is set in seconds.
+
+You can also specify a query comment like `select /*vt+ QUERY_TIMEOUT_MS=1000 */ `... 
+
+If you choose to set the vttablet command line flag the time you choose will set the absolute max time. The query comment can only override the timeout to a lower value. 
+
+This timeout via SQL query comments has the following limitations/caveats:
+
+- You need to prevent your SQL client from stripping the comments before sending to the server (the MySQL CLI strips comments by default)
+- You need to disable query normalization in vtgate (`--normalize_queries false`);  to allow the comment to reach vttablet.
+- It only works for SELECT statements today, this might change in the future.
+
+{{< info >}}
+Note that streaming queries are not affected by either of these timeouts.
+{{< /info >}}
+
+## Can I increase the resource pool timeout for streaming requests?
+
+Yes. You can adjust the vttablet flag for this. For example: `--queryserver-config-stream-pool-timeout=1s`.
+
+
+---
+title: Operating Vitess
+docs_nav_disable_expand: true
+weight: 3
+---
+
+
+
+---
+title: Advanced
+weight: 3
+---
+
+## How can I know which shard contains a row for a table?
+
+You can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have determined the shard ID you can use [manual shard targeting](http://vitess.io/docs/faq/operating-vitess/queries/?#can-i-address-a-specific-shard-if-i-want-to) to send that specific shard a query.  Note that if the query contains the primary Vindex column, or an appropriate secondary Vindex column, you do not need to do this, and vtgate can route the query automatically.
+
+## Can I use Vitess to do cross-shard JOINs or Transactions?
+
+A horizontal sharding solution for MySQL like Vitess does allow you to do both cross-shard joins and transactions, but just because you can doesn’t mean you should. 
+
+A sharded architecture will perform best if you design it well and play to its strength, e.g. favoring single-shard targeted writes within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. 
+
+Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach.
+
+
+---
+title: Overview
+weight: 1
+---
+
+## Why do auto-increment columns not work in sharded Vitess?
+
+Auto-increment columns do not work very well for sharded tables. Vitess sequences solve this problem. Sequence tables must be specified in the VSchema and then tied to table columns. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table.
+
+Vitess also supports sequence generators that can be used to generate new ids that work like MySQL auto increment columns. The VSchema allows you to associate table columns to sequence tables.
+
+## What is resharding? How does it work?
+
+Vitess supports resharding, in which the number of shards is changed on a live cluster. This can be either splitting one or more shards into smaller pieces, or merging neighboring shards into bigger pieces.
+
+During resharding, the data in the source shards is copied into the destination shards, allowed to catch up on replication, and then compared against the original to ensure data integrity. Then the live serving infrastructure is shifted to the destination shards, and the source shards are deleted.
+
+## How are shards named?
+
+Shard names have the following characteristics:
+
+- They represent a range, where the left number is included, but the right is not.
+- Their notation is hexadecimal.
+- They are left justified.
+- A - prefix means: anything less than the RHS value.
+- A - postfix means: anything greater than or equal to the LHS value.
+- A plain - denotes the full keyrange.
+
+An example of a shard name is `-80` and following the rules above this means:  `-80` == `00-80` == `0000-8000` == `000000-800000`
+
+Similarly `80-` is not the same as `80-FF` because `80-FF` == `8000-FF00`. Therefore `FFFF` will be out of the `80-FF` range as `80-` means: ‘anything greater than or equal to `0x80`
+
+A hash vindex produces an 8-byte number. This means that all numbers less than `0x8000000000000000` will fall in shard `-80`. Any number with the highest bit set will be >= `0x8000000000000000`, and will therefore belong to shard `80-`.
+
+## What does “/0” or “/-”mean?
+
+`0` or `-` indicates that the keyspace in question is unsharded. This means that a single shard covers the entire keyrange. Note that while both `0` and `-` are supported for legacy reasons, you can’t merge into shard `0` only `-`. For this and other reasons, it is recommended to use `-` instead of `0`.
+
+On the other hand a sharded cluster will have multiple keyranges, for example `-80` and `80-` if you have two shards. Note, that you can still manually target a single shard from your sharded cluster. You can read more about that [here](https://vitess.io/docs/faq/operating-vitess/queries/#can-i-address-a-specific-shard-if-i-want-to).
+
+
+---
+title: VReplication
+weight: 2
+---
+
+## How can Movetables be used with duplicate table names?
+
+If you have duplicate table names and want to use MoveTables you will need to take some action to prevent duplicate table routing issues. If you use move tables prior to following the steps below you will get an error similar to: `ERROR 1105 (HY000): vtgate: http://localhost:15001/: ambiguous table reference`.
+
+To avoid this error you need to:
+ 
+- Use vtctlclient GetRoutingRules and export that to a file. 
+- Then edit that file to add specific routing to the source schema for the tables you are using.
+- Then use `vtctlclient ApplyRoutingRules -rules="$(cat /tmp/whatever)" ` to apply those rules. 
+
+After applying those rules, queries to the tables will be explicitly routed to the source/original schema and you can use MoveTables.
+
+
+---
+title: Sharding
+docs_nav_disable_expand: true
+weight: 5
+---
+
+
+
+---
+title: Common Errors
+weight: 1
+---
+
+## Why is an SQL update with a primary key slow?
+
+Using tuples in a WHERE clause can cause a MySQL slowdown. Consider:
+
+```sql
+UPDATE tbl SET col=1 WHERE (pk1, pk2, pk3) IN (1,2,3), (4,5,6)
+```
+
+After a few tuples, MySQL may switch to a full table scan and lock the entire table for the duration. It should perform as expected once `FORCE INDEX (PRIMARY)` is added.  
+
+You can read further information on 'FORCE INDEX' in the MySQL documentation [here](https://dev.mysql.com/doc/refman/8.0/en/index-hints.html).
+
+## What can I do if I see a CPU increase after upgrading Vitess?
+
+If you are running Vitess 7.0 or above, we introduced the schema tracker, which could be running on the VTTablets now. You can disable it in order to prevent that reporting. 
+
+You will need to add `track_schema_versions` as false in the VTTablet.
+
+## What are the steps to take after an unplanned failover?
+
+In order to avoid creating orphaned VTTablets you will need to follow the steps below:
+
+1. Stop the VTTablets
+2. Delete the old VTTablet records
+3. Create the new keyspace
+4. Restart the VTTablets that are pointed at the new keyspace
+5. Use TabletExternallyReparented to inform Vitess of the current primary
+6. Recursively delete the old keyspace
+
+## Error: Could not open required defaults file: /path/to/my.cnf
+
+If you cannot start a cluster and see that error in the logs it most likely means that AppArmor is running on your server and is preventing Vitess processes from accessing the my.cnf file. 
+
+The workaround is to uninstall AppArmor:
+
+```sh
+sudo service apparmor stop
+sudo service apparmor teardown
+sudo update-rc.d -f apparmor remove
+```
+
+You may also need to reboot the machine after this. Many programs automatically install AppArmor, so you may need to uninstall again.
+
+## Error: mysqld not found in any of /usr/bin/{sbin,bin,libexec}
+
+If you're all set up with Vitess but mysqld won't start, with an error like this:
+
+```sh
+E0430 17:02:43.663441    5297 mysqlctl.go:254] failed start mysql: mysqld not found in any of /usr/bin/{sbin,bin,libexec}
+```
+
+You will need to perform the following steps:
+
+- Verify that mysqld is located in /usr/bin on all its hosts 
+- Verify that PATH has been set and sourced in .bashrc 
+
+If you have confirmed the above and are still getting the error referenced, it is likely that `VT_MYSQL_ROOT` has not been set correctly. 
+
+On most systems `VT_MYSQL_ROOT` should be set to `/usr`  because Vitess expects to find a bin directory below that.
+
+## What is the default behavior of connection pooling after a failover on an external (unmanaged) MySQL?
+
+The expected behavior is that the connection to the old primary will close and that Vitess will try to reconnect to the new primary.
+
+To ensure that the expected behavior occurs when using AWS/Aurora you will need to set the vttablet flag `-pool_hostname_resolve_interval` to something other than the default. This is because the default is 0. When this flag is set to the default, Vitess will never re-resolve the AWS/Aurora DNS name.
+
+
+---
+title: Information Gathering
+weight: 2
+---
+
+## Capturing a tcpdump network trace for vtgate
+
+Occasionally, when a problem is application or application MySQL driver specific, you may want to collect a tcpdump network trace of the data flowing from the application to the vtgate MySQL listener.
+
+In a production environment, this may be complicated by the fact that you may have a network loadbalancer in front of multiple vtgate instances.  In this case, you may have to run network captures across multiple hosts hosting the vtgate instances simultaneously to get all the information we need to debug the problem.  However, the method for collecting the network trace on each host would remain the same.
+
+To collect a network trace, let's review what you need:
+
+- You will typically need sudo or root access on the host in question to capture network traffic.
+- You need to determine which TCP port your vtgate instance is listening on.  If you look at your vtgate start script or at a process listing via:
+
+```sh
+ps -ef | grep vtgate
+```
+
+- You should see the vtgate port as the value of the -mysql_server_port parameter.  Make a note of this port number.
+- Next, you need to determine which physical network interface the application traffic is coming into the vtgate server.  Typically it could be something like eth0 or eno0, but you would verify by checking the output of: 
+
+```sh
+ip addr
+```
+
+- and matching up the ip address the application is using to access the vtgate instance.
+
+To actually capture the traffic (we assume you are using sudo) run:
+
+```sh
+sudo tcpdump -i<interface> -s0 -n -nn -B 32768 -w /path/to/tempfile.dump port <tcpport>
+```
+
+Where:
+
+- <interface> is the physical network interface you determined earlier, e.g. eth0
+ - /path/to/tempfile.dump is the filesystem path to a location where you have sufficient space for the dump file.  Note that in a production environment, a tcpdump of live traffic can generate a dumpfile of many gigabytes pretty quickly, so be careful.
+- <tcpport> is the port number you determined earlier that vtgate is listening on for MySQL traffic.
+
+When you are done, you can use this dump file to review these logs for any errors or issues.
+
+## Collecting information for troubleshooting
+
+In order to troubleshoot issues occurring in your implementation of Vitess you will need to provide the community as much context as possible.
+
+When you reach out you should include, if possible, a summary/overview deployment document of what components are involved and how they interconnect, etc. Customers often maintain something like this for internal support purposes.
+
+Beyond the overview deployment document, we recommend that for the best experience, you collect as many of the items listed below as possible from production Vitess systems:
+
+- Logs (vtgate, vttablet, underlying MySQL)
+- Metrics (vtgate, vttablet, underlying MySQL)
+- Other statistics (MySQL processlist, MySQL InnoDB engine status, etc.)
+- Application DB pool configurations
+- Load balancer configurations (if in the MySQL connection path)
+- Historical load patterns
+
+
+---
+title: Troubleshooting
+docs_nav_disable_expand: true
+weight: 4
+---
+
