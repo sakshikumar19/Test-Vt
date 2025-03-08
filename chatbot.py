@@ -44,6 +44,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
+huggingface_token = st.secrets["HUGGINGFACE_TOKEN"]
 
 class MyModel(BaseModel):
     array: np.ndarray
