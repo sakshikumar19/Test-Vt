@@ -171,7 +171,7 @@ def run_streamlit_eval():
         st.subheader("Document Ingestion")
         document_paths = st.text_area(
             "Document Paths (one per line)",
-            "../data/troubleshoot.txt\n../data/design-docs.txt\n../data/faq.txt\n../data/flags.txt\n../data/v22.txt"
+            "./data/troubleshoot.txt\n./data/design-docs.txt\n./data/faq.txt\n./data/flags.txt\n./data/v22.txt"
         ).strip().split("\n")
     
     # Create tabs for different evaluation modes
