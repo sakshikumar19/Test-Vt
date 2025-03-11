@@ -44,8 +44,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
-huggingface_token = st.secrets["HUGGINGFACE_TOKEN"]
+# huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
 
 class MyModel(BaseModel):
     array: np.ndarray
@@ -61,6 +60,7 @@ class MyModel(BaseModel):
 #         task="text-generation"
 #     )
 #     return llm
+
 
 def initialize_inference_llm(model_name: str = "llama-3.3-70b-versatile", api_key: Optional[str] = None, temperature: float = 0.2):
     groq_api_key = os.environ.get("GROQ_API_KEY")
