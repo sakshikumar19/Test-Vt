@@ -8,6 +8,8 @@ import time
 import pydantic
 from pydantic import ConfigDict
 
+import streamlit as st
+
 if not hasattr(pydantic.BaseModel, 'model_config'):
     pydantic.BaseModel.model_config = ConfigDict(arbitrary_types_allowed=True)
 else:
@@ -43,6 +45,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
+huggingface_token = st.secrets["HUGGINGFACE_TOKEN"]
 
 class MyModel(BaseModel):
     array: np.ndarray
