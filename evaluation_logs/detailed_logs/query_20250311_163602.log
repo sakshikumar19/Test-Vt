@@ -1,0 +1,38 @@
+DETAILED QUERY LOG - 2025-03-11 16:36:02
+======================================================================
+
+QUESTION: How do I specify a custom configuration file for Vitess tools like mysqlctl or mysqlctld?
+
+ANSWER: I apologize, but I encountered an error generating a response. Please try rephrasing your question or ask about a different Vitess topic.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9832348823547363
+  - Response Time: 24817.48 ms
+  - Retrieval Time (est.): 17372.24 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9832348823547363
+  Content:
+----------------------------------------
+`tablet_uid` and `mysql_port`. Here is a sample invocation: ```sh mysqlctl \ --log_dir=${VTDATAROOT}/tmp \ --tablet_uid=100 \ --mysql_port=17100 \ init ``` ### my.cnf `mysqlctl` **will not** read configuration files from common locations such as `/etc/my.cnf` or `/etc/mysql/my.cnf`. Instead, it will create a separate `my.cnf` config file using builtin defaults. The source files can be found [here](https://github.com/vitessio/vitess/tree/main/config/mycnf). To add your own settings, you can set the `EXTRA_MY_CNF` environment variable to a list of colon-separated files. Alternatively, you can override the default behavior by specifying your own template file using the `-mysqlctl_mycnf_template` command line argument. For example, to override the default innodb buffer pool size, you would create a file named `/path/to/common.cnf` as follows: ```text innodb_buffer_pool_size=1G ``` And then launch mysqlctl with as follows: ```sh EXTRA_MY_CNF=”/path/to/common.cnf” mysqlctl \ --log_dir=${VTDATAROOT}/tmp \ --tablet_uid=100 \ --mysql_port=17100 \ init ``` When specifying additional configuration changes to Vitess, please keep in mind that changing the following settings is unsupported: | Setting | Reason | |---------------------|----------------| | `auto_commit` | MySQL autocommit needs to be turned on. VTTablet uses connection pools to MySQL. If autocommit is turned off, MySQL will start an implicit transaction (with a point in time snapshot) for each connection and will work very hard at keeping the current view unchanged, which would be counter-productive. | | `log-bin` | Several Vitess features rely on the binary log being enabled. | | `binlog-format` | Vitess only supports row-based replication. Do not change this setting from the included configuration files. | | `binlog-row-image` | Vitess only supports the default value (`FULL`) | | `log-slave-updates` | Vitess requires this setting enabled, as it is in the included configuration files. | | `character-set\*` | Vitess only supports `utf8` (and variants such as `utf8mb4`) | | `gtid-mode` | Vitess relies on GTIDs to track changes to topology. | | `gtid-strict-mode`/`enforce-gtid-consistency` | Vitess requires 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9428570866584778
+  Content:
+----------------------------------------
+series: mysqlctl commit: d9ab9f7a1cf3cae19a1ea06963798a7646e8fb27 --- ## mysqlctl reinit_config Reinitializes my.cnf file with new server_id. ### Synopsis Regenerate new configuration files for an existing `mysqld` instance (generating new server_id and server_uuid values). This could be helpful to revert configuration changes, or to pick up changes made to the bundled config in newer Vitess versions. ``` mysqlctl reinit_config [flags] ``` ### Examples ``` mysqlctl \ --alsologtostderr \ --tablet_uid 101 \ --mysql_port 12345 \ reinit_config ``` ### Options ``` -h, --help help for reinit_config ``` ### Options inherited from parent commands ``` --alsologtostderr log to standard error as well as files --app_idle_timeout duration Idle timeout for app connections (default 1m0s) --app_pool_size int Size of the connection pool for app connections (default 40) --catch-sigpipe catch and ignore SIGPIPE on stdout and stderr if specified --config-file string Full path of the config file (with extension) to use. If set, --config-path, --config-type, and --config-name are ignored. --config-file-not-found-handling ConfigFileNotFoundHandling Behavior when a config file is not found. (Options: error, exit, ignore, warn) (default warn) --config-name string Name of the config file (without extension) to search for. (default "vtconfig") --config-path strings Paths to search for config files in. (default [<WORKDIR>]) --config-persistence-min-interval duration minimum interval between persisting dynamic config changes back to disk (if no change has occurred, nothing is done). (default 1s) --config-type string Config file type (omit to infer config type from file extension). --db-credentials-file string db credentials file; send SIGHUP to reload this file --db-credentials-server string db credentials server type ('file' - file implementation; 'vault' - HashiCorp Vault implementation) (default "file") --db-credentials-vault-addr string URL to Vault server --db-credentials-vault-path string Vault path to credentials JSON blob, e.g.: secret/data/prod/dbcreds --db-credentials-vault-role-mountpoint string Vault AppRole mountpoint; can also be passed using VAULT_MOUNTPOINT environment variable (default "approle") --db-credentials-vault-role-secretidfile string Path to file containing Vault AppRole secret_id; can also be passed using 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9106111526489258
+  Content:
+----------------------------------------
+If set, the process will write its pid to the named file, and delete it on graceful shutdown. --pool_hostname_resolve_interval duration if set force an update to all hostnames and reconnect if changed, defaults to 0 (disabled) --pprof strings enable profiling --pprof-http enable pprof http endpoints --purge_logs_interval duration how often try to remove old logs (default 1h0m0s) --replication_connect_retry duration how long to wait in between replica reconnect attempts. Only precise to the second. (default 10s) --security_policy string the name of a registered security policy to use for controlling access to URLs - empty means allow all for anyone (built-in policies: deny-all, read-only) --service_map strings comma separated list of services to enable (or disable if prefixed with '-') Example: grpc-queryservice --socket_file string Local unix socket file to listen on --stderrthreshold severityFlag logs at or above this threshold go to stderr (default 1) --table-refresh-interval int interval in milliseconds to refresh tables in status page with refreshRequired class --tablet_dir string The directory within the vtdataroot to store vttablet/mysql files. Defaults to being generated by the tablet uid. --tablet_uid uint32 Tablet UID. (default 41983) --v Level log level for V logs -v, --version print binary version --vmodule vModuleFlag comma-separated list of pattern=N settings for file-filtered logging ``` ### SEE ALSO * [mysqlctl](../) - mysqlctl initializes and controls mysqld with Vitess-specific configuration. --- title: mysqlctl series: mysqlctl commit: d9ab9f7a1cf3cae19a1ea06963798a7646e8fb27 --- ## mysqlctl mysqlctl initializes and controls mysqld with Vitess-specific configuration. ### Synopsis `mysqlctl` is a command-line client used for managing `mysqld` instances. It is responsible for bootstrapping tasks such as generating a configuration file for `mysqld` and initializing the instance and its data directory. The `mysqld_safe` watchdog is utilized when present. This helps ensure that `mysqld` is automatically restarted after failures. ### Options ``` --alsologtostderr log to standard error as well as files --app_idle_timeout duration Idle 
+----------------------------------------
+

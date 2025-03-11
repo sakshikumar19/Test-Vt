@@ -1,0 +1,46 @@
+DETAILED QUERY LOG - 2025-03-11 17:00:11
+======================================================================
+
+QUESTION: What is the default behavior if a config file is not found in Vitess?
+
+ANSWER: ### Default Behavior for Missing Config File
+
+The default behavior when a config file is not found in Vitess is to **warn**. This is specified by the `--config-file-not-found-handling` option, which has a default value of **warn**. 
+
+Available options for this behavior include:
+* error
+* exit
+* ignore
+* warn (default)
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9877162575721741
+  - Response Time: 24213.89 ms
+  - Retrieval Time (est.): 16949.72 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9877162575721741
+  Content:
+----------------------------------------
+- Initializes and controls zookeeper with Vitess-specific configuration. --- title: zkctl series: zkctl commit: d9ab9f7a1cf3cae19a1ea06963798a7646e8fb27 --- ## zkctl Initializes and controls zookeeper with Vitess-specific configuration. ### Options ``` --alsologtostderr log to standard error as well as files --config-file string Full path of the config file (with extension) to use. If set, --config-path, --config-type, and --config-name are ignored. --config-file-not-found-handling ConfigFileNotFoundHandling Behavior when a config file is not found. (Options: error, exit, ignore, warn) (default warn) --config-name string Name of the config file (without extension) to search for. (default "vtconfig") --config-path strings Paths to search for config files in. (default [<WORKDIR>]) --config-persistence-min-interval duration minimum interval between persisting dynamic config changes back to disk (if no change has occurred, nothing is done). (default 1s) --config-type string Config file type (omit to infer config type from file extension). -h, --help help for zkctl --keep_logs duration keep logs for this long (using ctime) (zero to keep forever) --keep_logs_by_mtime duration keep logs for this long (using mtime) (zero to keep forever) --log_backtrace_at traceLocations when logging hits line file:N, emit a stack trace --log_dir string If non-empty, write log files in this directory --log_err_stacks log stack traces for errors --log_rotate_max_size uint size in bytes at which logs are rotated (glog.MaxSize) (default 1887436800) --logtostderr log to standard error instead of files --pprof strings enable profiling --pprof-http enable pprof http endpoints --purge_logs_interval duration how often try to remove old logs (default 1h0m0s) --stderrthreshold severityFlag logs at or above this threshold go to stderr (default 1) --v Level log level for V logs -v, --version print binary version --vmodule vModuleFlag comma-separated list of pattern=N settings for file-filtered logging --zk.cfg string zkid@server1:leaderPort1:electionPort1:clientPort1,...) (default "6@<hostname>:3801:3802:3803") --zk.extra stringArray extra config line(s) to append verbatim to config (flag can be specified more than once) --zk.myid uint which server do you want to be? only 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9837560653686523
+  Content:
+----------------------------------------
+client to compare workloads in Vitess across the various client/server protocols. Usage: vtbench [flags] Examples: There are a number of command line options to control the behavior, but as a basic example, the three supported client protocols are: Mysql protocol to vtgate: vtbench \ --protocol mysql \ --host vtgate-host.my.domain \ --port 15306 \ --user db_username \ --db-credentials-file ./vtbench_db_creds.json \ --db @replica \ --sql "select * from loadtest_table where id=123456789" \ --threads 10 \ --count 10 GRPC to vtgate: vtbench \ --protocol grpc-vtgate \ --host vtgate-host.my.domain \ --port 15999 \ --db @replica \ $VTTABLET_GRPC_ARGS \ --sql "select * from loadtest_table where id=123456789" \ --threads 10 \ --count 10 GRPC to vttablet: vtbench \ --protocol grpc-vttablet \ --host tablet-loadtest-00-80.my.domain \ --port 15999 \ --db loadtest/00-80@replica \ --sql "select * from loadtest_table where id=123456789" \ --threads 10 \ --count 10 Flags: --alsologtostderr log to standard error as well as files --config-file string Full path of the config file (with extension) to use. If set, --config-path, --config-type, and --config-name are ignored. --config-file-not-found-handling ConfigFileNotFoundHandling Behavior when a config file is not found. (Options: error, exit, ignore, warn) (default warn) --config-name string Name of the config file (without extension) to search for. (default "vtconfig") --config-path strings Paths to search for config files in. (default [{{ .Workdir }}]) --config-persistence-min-interval duration minimum interval between persisting dynamic config changes back to disk (if no change has occurred, nothing is done). (default 1s) --config-type string Config file type (omit to infer config type from file extension). --count int Number of queries per thread (default 1000) --db string Database name to use when connecting / running the queries (e.g. @replica, keyspace, keyspace/shard etc) --deadline duration Maximum duration for the test run (default 5 minutes) (default 5m0s) --grpc_auth_static_client_creds string When using grpc_static_auth in the server, this file provides the credentials to use 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9752990007400513
+  Content:
+----------------------------------------
+and --config-name are ignored. --config-file-not-found-handling ConfigFileNotFoundHandling Behavior when a config file is not found. (Options: error, exit, ignore, warn) (default warn) --config-name string Name of the config file (without extension) to search for. (default "vtconfig") --config-path strings Paths to search for config files in. (default [<WORKDIR>]) --config-persistence-min-interval duration minimum interval between persisting dynamic config changes back to disk (if no change has occurred, nothing is done). (default 1s) --config-type string Config file type (omit to infer config type from file extension). --consul_auth_static_file string JSON File to read the topos/tokens from. --datadog-agent-host string host to send spans to. if empty, no tracing will be done --datadog-agent-port string port to send spans to. if empty, no tracing will be done --dbddl_plugin string controls how to handle CREATE/DROP DATABASE. use it if you are using your own database provisioning service (default "fail") --ddl_strategy string Set default strategy for DDL statements. Override with @@ddl_strategy session variable (default "direct") --default_tablet_type topodatapb.TabletType The default tablet type to set for queries, when one is not explicitly selected. (default PRIMARY) -d, --dir string output directory to write documentation (default "doc") --discovery_high_replication_lag_minimum_serving duration Threshold above which replication lag is considered too high when applying the min_number_serving_vttablets flag. (default 2h0m0s) --discovery_low_replication_lag duration Threshold below which replication lag is considered low enough to be healthy. (default 30s) --emit_stats If set, emit stats to push-based monitoring and stats backends --enable-balancer Enable the tablet balancer to evenly spread query load for a given tablet type --enable-partial-keyspace-migration (Experimental) Follow shard routing rules: enable only while migrating a keyspace shard by shard. See documentation on Partial MoveTables for more. (default false) --enable-views Enable views support in vtgate. --enable_buffer Enable buffering (stalling) of primary traffic during failovers. --enable_buffer_dry_run Detect and log failover events, but do not actually buffer requests. --enable_direct_ddl Allow users to submit direct DDL 
+----------------------------------------
+

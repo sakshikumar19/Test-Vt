@@ -1,10 +1,9 @@
-jedi==0.16
-torch==2.5.1
-torchvision
-torchaudio
+jedi
+torch
 transformers
 sentence-transformers
 bitsandbytes
+accelerate
 haystack-ai
 gradio
 langchain
@@ -12,3 +11,4 @@ langchain_community
 langchain-huggingface
 streamlit
 load_dotenv
+groq
