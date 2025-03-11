@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import torch
 import numpy as np
 import time
@@ -24,20 +24,19 @@ from haystack.components.retrievers.in_memory import InMemoryBM25Retriever
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
 from haystack.components.retrievers import InMemoryEmbeddingRetriever
-from haystack.components.converters import TextFileToDocument, PyPDFToDocument, MarkdownToDocument
+from haystack.components.converters import TextFileToDocument
 from haystack.components.writers import DocumentWriter
 from haystack.utils import Secret
 from haystack.components.joiners import DocumentJoiner
 from haystack.utils import ComponentDevice
 from haystack.components.rankers import TransformersSimilarityRanker
 
-from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
-
 from langchain_huggingface import HuggingFaceEndpoint
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, BitsAndBytesConfig
 
 from pydantic import BaseModel, ConfigDict
 import numpy as np
+from groq import Groq
 
 from dotenv import load_dotenv
 
@@ -50,15 +49,175 @@ class MyModel(BaseModel):
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+# def initialize_inference_llm(model_name):
+#     llm = HuggingFaceEndpoint(
+#         repo_id="mistralai/Mistral-7B-Instruct-v0.3",
+#         huggingfacehub_api_token=huggingface_token,
+#         temperature=0.2,
+#         max_new_tokens=3000,
+#         task="text-generation"
+#     )
+#     return llm
+
+def initialize_inference_llm(model_name: str = "llama-3.3-70b-versatile", api_key: Optional[str] = None, temperature: float = 0.2):
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+    if not groq_api_key:
+        raise ValueError("Groq API key must be provided either as a parameter or as GROQ_API_KEY environment variable")
+    
+    client = Groq(api_key=groq_api_key)
+    
+    def llm_callable(prompt: Union[str, List[Dict[str, str]]], max_tokens: int = 3000) -> str:
+        if isinstance(prompt, str):
+            messages = [{"role": "user", "content": prompt}]
+        else:
+            messages = prompt
+            
+        chat_completion = client.chat.completions.create(
+            messages=messages,
+            model=model_name,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        
+        return chat_completion.choices[0].message.content
+    
+    return llm_callable
+
+# def initialize_llm(model_name):
+#     """Initialize and return the language model with model-specific tokenizer settings"""
+#     start_time = time.time()
+
+#     print(f"Loading model: {model_name}")
+
+#     # Configure tokenizer settings based on model
+#     if model_name == "mistralai/Mistral-7B-Instruct-v0.3":
+#         use_fast = True
+#     elif model_name == "microsoft/phi-2":
+#         use_fast = False
+#     else:
+#         # Default for other models
+#         use_fast = False
+
+#     bnb_config = BitsAndBytesConfig(
+#         load_in_4bit=True,
+#         bnb_4bit_use_double_quant=False,
+#         bnb_4bit_quant_type="nf4",
+#         bnb_4bit_compute_dtype=torch.float16
+#     )
+
+#     model = AutoModelForCausalLM.from_pretrained(
+#         model_name,
+#         quantization_config=bnb_config,
+#         device_map="auto"
+#     )
+
+#     tokenizer = AutoTokenizer.from_pretrained(
+#         model_name,
+#         use_fast=use_fast,  # Now using model-specific setting
+#         add_eos_token=True,
+#         padding_side="right"
+#     )
+
+#     print(f"Model and tokenizer loaded successfully (use_fast={use_fast}).")
+#     end_time = time.time()
+#     execution_time = end_time - start_time
+#     print(f"Execution time: {execution_time} seconds")
+
+#     tokenizer.pad_token_id = tokenizer.eos_token_id
+
+#     pipe = pipeline(
+#         "text-generation",
+#         model=model,
+#         tokenizer=tokenizer,
+#         framework='pt',
+#         max_new_tokens=1000,
+#         temperature=0.3,
+#         top_p=0.9,
+#         repetition_penalty=1.2,
+#         do_sample=True,
+#         return_full_text=True  # Get the full text including the prompt
+#     )
+
+#     def llm_wrapper(prompt):
+#         try:
+#             response = pipe(prompt)[0]['generated_text']
+
+#             # Extracting answer that comes after the prompt
+#             if "[/INST]" in response:
+#                 answer = response.split("[/INST]")[-1].strip()
+#             else:
+#                 answer = response.replace(prompt, "").strip()
+
+#             return answer
+#         except Exception as e:
+#             print(f"Error in LLM wrapper: {e}")
+#             return "Error generating response."
+
+#     return llm_wrapper
+
 def initialize_llm(model_name):
-    llm = HuggingFaceEndpoint(
-        repo_id="mistralai/Mistral-7B-Instruct-v0.3",
-        huggingfacehub_api_token=huggingface_token,
-        temperature=0.2,
-        max_new_tokens=3000,
-        task="text-generation"
-    )
-    return llm
+    # """Initialize and return the language model with AWQ quantization"""
+    # start_time = time.time()
+
+    # print(f"Loading model: {model_name}")
+
+    # # Configure tokenizer settings based on model
+    # if model_name == "mistralai/Mistral-7B-Instruct-v0.3":
+    #     use_fast = True
+    # elif model_name == "microsoft/phi-2":
+    #     use_fast = False
+    # else:
+    #     use_fast = False
+
+    # # Load AWQ quantized model
+    # model = AutoAWQForCausalLM.from_quantized(
+    #     model_name,
+    #     device="cpu",  # AWQ is better for CPU usage
+    #     torch_dtype=torch.float16
+    # )
+
+    # tokenizer = AutoTokenizer.from_pretrained(
+    #     model_name,
+    #     use_fast=use_fast,
+    #     add_eos_token=True,
+    #     padding_side="right"
+    # )
+
+    # print(f"Model and tokenizer loaded successfully (use_fast={use_fast}).")
+    # end_time = time.time()
+    # execution_time = end_time - start_time
+    # print(f"Execution time: {execution_time} seconds")
+
+    # tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    # pipe = pipeline(
+    #     "text-generation",
+    #     model=model,
+    #     tokenizer=tokenizer,
+    #     framework="pt",
+    #     max_new_tokens=1000,
+    #     temperature=0.3,
+    #     top_p=0.9,
+    #     repetition_penalty=1.2,
+    #     do_sample=True,
+    #     return_full_text=True
+    # )
+
+    # def llm_wrapper(prompt):
+    #     try:
+    #         response = pipe(prompt)[0]["generated_text"]
+
+    #         if "[/INST]" in response:
+    #             answer = response.split("[/INST]")[-1].strip()
+    #         else:
+    #             answer = response.replace(prompt, "").strip()
+
+    #         return answer
+    #     except Exception as e:
+    #         print(f"Error in LLM wrapper: {e}")
+    #         return "Error generating response."
+    llm_wrapper = ''
+    return llm_wrapper
 
 class TextSplitter:
     """Custom text splitter with improved chunking strategy"""
@@ -149,6 +308,8 @@ class LocalLLMAnswerGenerator:
     """Generates answers using a pre-loaded language model"""
     def __init__(self, local_llm):
         self.llm = local_llm
+        print(f"llm_model type: {type(self.llm)}")
+
         print("Using pre-loaded language model")
 
     def generate(self, context: str, question: str, history: List = None) -> str:
@@ -162,7 +323,7 @@ class LocalLLMAnswerGenerator:
                 history_text += f"Human: {q}\nAssistant: {a}\n\n"
 
         # Add context truncation
-        max_context_length = 1500  # Safe limit to prevent exceeding token limit
+        max_context_length = 3000  # Safe limit to prevent exceeding token limit
         if len(context) > max_context_length:
             print(f"Context too long ({len(context)} chars), truncating to ~{max_context_length} chars")
             # Split context into sentences and rebuild up to the limit
@@ -244,14 +405,15 @@ class VitessFAQChatbot:
     """Main chatbot class integrating all components"""
     def __init__(
         self,
-        embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        llm_model: str = "mistralai/Mistral-7B-Instruct-v0.2",
+        embedding_model,
+        llm_model,
         chunk_size: int = 200,
         chunk_overlap: int = 40,
         top_k: int = 3
     ):
         self.embedding_model = embedding_model
         self.llm_model = llm_model
+        print(f"llm_model type: {type(self.llm_model)}")
         self.top_k = top_k
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         print(f"Using device: {self.device}")
@@ -277,7 +439,7 @@ class VitessFAQChatbot:
 
         # Initialize answer generator
         # self.answer_generator = LocalLLMAnswerGenerator(llm_model, self.device)
-        self.answer_generator = LocalLLMAnswerGenerator(llm_model)
+        self.answer_generator = LocalLLMAnswerGenerator(self.llm_model)
 
         # Chat history
         self.chat_history = []
