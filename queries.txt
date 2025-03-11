@@ -1,0 +1,117 @@
+General Questions
+What is the purpose of the mysqlctl command in Vitess?
+
+How does mysqlctld differ from mysqlctl in Vitess?
+
+What happens if mysqld_safe is not used with mysqlctld?
+
+How can I generate an autocompletion script for mysqlctl?
+
+What is the default MySQL server version advertised by Vitess?
+
+
+Configuration and Flags
+How do I specify a custom configuration file for Vitess tools like mysqlctl or mysqlctld?
+
+What is the default behavior if a config file is not found in Vitess?
+
+How can I change the MySQL port for mysqlctl or mysqlctld?
+
+    What is the purpose of the --db-credentials-vault-addr flag in Vitess?
+
+How do I configure SSL for database connections in Vitess?
+
+What is the default SSL mode for database connections in Vitess?
+
+How can I disable SSL for the DBA user connection in Vitess?
+
+What is the purpose of the --db_charset flag in Vitess?
+
+How do I configure Vitess to use a specific TLS version for database connections?
+
+What is the purpose of the --config-persistence-min-interval flag?
+
+
+Logging and Debugging
+How can I enable logging to standard error instead of files in Vitess?
+
+What is the purpose of the --log_rotate_max_size flag in Vitess?
+
+How do I configure Vitess to keep logs for a specific duration?
+
+What is the purpose of the --log_err_stacks flag in Vitess?
+
+How can I enable profiling in Vitess using the --pprof flag?
+
+
+Backup and Restore
+What is the purpose of the vtbackup command in Vitess?
+
+How do I configure Vitess to use Azure Blob Storage for backups?
+
+What is the default backup engine implementation in Vitess?
+
+How can I enable compression for backups in Vitess?
+
+What is the purpose of the --incremental_from_pos flag in vtbackup?
+
+How do I configure Vitess to restore from a specific backup timestamp?
+
+What is the purpose of the --restore_concurrency flag in Vitess?
+
+How can I disable redo logging during a restore operation in Vitess?
+
+
+Replication and Sharding
+What is the purpose of the --replication_connect_retry flag in Vitess?
+
+How do I configure Vitess to wait for a specific replication position during a backup?
+
+What is the purpose of the --disable-redo-log flag in Vitess backups?
+
+How can I configure Vitess to use a specific replication flavor like FilePos?
+
+
+Topology and Cluster Management
+What is the purpose of the topo2topo command in Vitess?
+
+How do I copy topology data from one server to another using topo2topo?
+
+What is the purpose of the --do-keyspaces flag in topo2topo?
+
+How can I compare data between two topologies using topo2topo?
+
+
+Security and Authentication
+How do I configure Vitess to use HashiCorp Vault for database credentials?
+
+What is the purpose of the --security_policy flag in Vitess?
+
+How can I enable gRPC authentication in Vitess?
+
+What is the purpose of the --grpc_auth_mode flag in Vitess?
+
+
+Performance and Optimization
+What is the purpose of the --app_pool_size flag in Vitess?
+
+How do I configure the connection pool size for DBA connections in Vitess?
+
+What is the purpose of the --query-timeout flag in Vitess?
+
+How can I enable query consolidation in Vitess?
+
+What is the purpose of the --hot_row_protection flag in Vitess?
+
+
+Miscellaneous
+What is the purpose of the vtaclcheck command in Vitess?
+
+How do I check the validity of an ACL file using vtaclcheck?
+
+What is the purpose of the --static-auth-file flag in vtaclcheck?
+
+How can I enable gRPC tracing in Vitess?
+
+What is the purpose of the --vmodule flag in Vitess?
+
