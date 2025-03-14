@@ -1,0 +1,49 @@
+DETAILED QUERY LOG - 2025-03-15 00:51:37
+======================================================================
+
+QUESTION: What are the performance implications of cross-shard transactions in Vitess?
+
+ANSWER: ### Performance Implications of Cross-Shard Transactions in Vitess
+The performance implications of cross-shard transactions in Vitess are significant. According to the context, **using atomic distributed transactions will impact commit latency**. 
+
+This means that transactions that span multiple shards will take longer to commit than transactions that are limited to a single shard. 
+
+Therefore, it is **recommended to design your VSchema to minimize cross-shard updates where possible** to avoid performance issues. 
+
+This is because cross-shard transactions require additional coordination and communication between shards, which can lead to increased latency and decreased performance. 
+
+As a result, Vitess supports different transaction modes, including **Two-Phase Commit (TwoPC)**, which allows for atomic updates across multiple shards but at the cost of increased commit latency. 
+
+It is essential to carefully consider the performance implications of cross-shard transactions when designing your database schema and application workflow in Vitess.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.7974145412445068
+  - Response Time: 11067.33 ms
+  - Retrieval Time (est.): 7747.13 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.7974145412445068
+  Content:
+----------------------------------------
+modify a [subset of system settings](https://github.com/vitessio/vitess/blob/main/go/vt/sysvars/sysvars.go#L174-L217) on the MySQL. ## Calculating maximum db connections used by vttablet You can use the following formula to approximate the maximum MySQL connections per vttablet instance: ``` --queryserver-config-transaction-cap x 2 (transaction_pool and found_rows_pool) + --queryserver-config-pool-size (conn_pool) + --queryserver-config-stream-pool-size (stream_conn_pool) + --dba_pool_size (dba_conn_pool) + --app_pool_size (app_conn_pool) + 3 (tx_read_pool, hardcoded) + 7 (online DDL) + variable (on demand: for vreplication, MySQL replication, etc; should < 10) + variable (reserved connections used by `enable_system_settings`) ``` {{< info >}} Note that most servers will not use this many connections, since most workloads do not exercise all the pools. {{< /info >}} --- title: Distributed Transactions weight: 11 aliases: ['/docs/launching/twopc/','/docs/reference/two-phase-commit/','/docs/reference/distributed-transaction/'] --- # Distributed Transactions in Vitess ## Overview A distributed transaction is an operation that spans multiple database shards while maintaining data consistency. Vitess supports distributed transactions through a Two-Phase Commit (TwoPC) protocol, allowing you to perform atomic updates across different shards in your database cluster. > **Performance Note:** Using atomic distributed transactions will impact commit latency. > We recommend designing your VSchema to minimize cross-shard updates where possible. ## Transaction Modes Vitess supports three levels of transaction atomicity, each offering different guarantees and performance characteristics: | Mode | Description | Use Case | Guarantees | |------|-------------|----------|-----------| | Single | Transactions limited to one shard | Simple CRUD operations | Full ACID | | Multi | Can span multiple shards with best-effort commits | Bulk updates where partial success is acceptable | No atomicity | | TwoPC | Atomic commits across multiple shards | Financial transactions, inventory updates | Atomic commits | ### When to Use TwoPC Choose TwoPC when you need guaranteed atomic commits across shards, such as: - Financial transactions where partial commits could lead to inconsistent balances - Inventory systems where items must be updated 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.7633751630783081
+  Content:
+----------------------------------------
+- You need to prevent your SQL client from stripping the comments before sending to the server (the MySQL CLI strips comments by default) - You need to disable query normalization in vtgate (`--normalize_queries false`); to allow the comment to reach vttablet. - It only works for SELECT statements today, this might change in the future. {{< info >}} Note that streaming queries are not affected by either of these timeouts. {{< /info >}} ## Can I increase the resource pool timeout for streaming requests? Yes. You can adjust the vttablet flag for this. For example: `--queryserver-config-stream-pool-timeout=1s`. --- title: Operating Vitess docs_nav_disable_expand: true weight: 3 --- --- title: Advanced weight: 3 --- ## How can I know which shard contains a row for a table? You can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have determined the shard ID you can use [manual shard targeting](http://vitess.io/docs/faq/operating-vitess/queries/?#can-i-address-a-specific-shard-if-i-want-to) to send that specific shard a query. Note that if the query contains the primary Vindex column, or an appropriate secondary Vindex column, you do not need to do this, and vtgate can route the query automatically. ## Can I use Vitess to do cross-shard JOINs or Transactions? A horizontal sharding solution for MySQL like Vitess does allow you to do both cross-shard joins and transactions, but just because you can doesn’t mean you should. A sharded architecture will perform best if you design it well and play to its strength, e.g. favoring single-shard targeted writes within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach. --- title: Overview weight: 1 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.6488227844238281
+  Content:
+----------------------------------------
+results in transactions also falling within the same shard, but there are situations where this may not be possible. For such use-cases, Vitess supports [configurable atomicity levels for transactions that go across shards](../../configuration-advanced/shard-isolation-atomicity). In the cases where a cross-shard transaction simply cannot be avoided, the [usage of 2PC](../../../reference/features/distributed-transaction/) allows for atomic writes across shards in a single logical transaction. ### Large Tenants If your application is tenant-based, it is possible that a single tenant may grow so big that they may not fit in one shard. If so, it is likely that the application is using a different key that has a higher cardinality than the tenant id. The question to ask oneself is: if the tenant were a single application by themselves, what would be their sharding key, and then shard by that key instead of the tenant id. Vitess now has support for [multi-column Vindexes](../advanced-vschema/#multi-column-vindexes). You can now shard by the tenant id and a secondary key. The two-column sharding approach allows you to group all data for a given tenant into a smaller set of shards rather than a random distribution. This may be beneficial for security or compliance reasons, in case the tenant would want their data to be physically isolated from other tenants. ### Region Sharding The Vitess multi-column Vindex feature also allows you to locate data associated with regions in different geographical locations. For more details, see [Region-based Sharding](../../configuration-advanced/region-sharding). ### Many-to-Many relationships Sharding works well only if the relationship between data is hierarchical (one-to-one or one-to-many). If a table has foreign keys into multiple other tables, you have to choose one based on the strongest relationship and group the rows by that foreign key. The rest of the relationships will incur cross-shard overheads. If more than one relationship is critically strong, you can look 
+----------------------------------------
+

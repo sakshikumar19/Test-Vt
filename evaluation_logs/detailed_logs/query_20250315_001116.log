@@ -1,0 +1,46 @@
+DETAILED QUERY LOG - 2025-03-15 00:11:16
+======================================================================
+
+QUESTION: What does it mean for Vitess to be MySQL compatible?
+
+ANSWER: ### MySQL Compatibility in Vitess
+
+Vitess is designed to be compatible with MySQL, which means it supports many of the same features and protocols as MySQL. This compatibility allows Vitess to:
+
+* Implement the MySQL server protocol, making it compatible with virtually any language
+* Use compliant JDBC and Go database drivers with a native query protocol
+* Support MySQL versions 5.7 to 8.0, with experimental support for 8.4, as well as Percona Server for MySQL and MariaDB versions 10.10+
+
+Being MySQL compatible enables Vitess to seamlessly integrate with existing MySQL applications and tools, minimizing the need for application changes when scaling or migrating to Vitess. For more information on MySQL compatibility in Vitess, you can refer to the [MySQL Compatibility](../../reference/compatibility/mysql-compatibility/) documentation.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9320148229598999
+  - Response Time: 19419.65 ms
+  - Retrieval Time (est.): 13593.76 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9320148229598999
+  Content:
+----------------------------------------
+Supported Databases For Imports Vitess supports importing from a wide range of databases that include: - [MySQL](https://www.mysql.com/) version 5.7 to 8.0. Experimental support for 8.4. - [Percona Server for MySQL](https://www.percona.com/software/mysql-database/percona-server) version 5.7 to 8.0. Experimental support for 8.4. - [MariaDB](https://mariadb.com) versions 10.10+ ## See also + [MySQL Compatibility](../../reference/compatibility/mysql-compatibility/) --- title: What Is Vitess weight: 1 featured: true --- Vitess is a database solution for deploying, scaling and managing large clusters of open-source database instances. It currently supports MySQL and Percona Server for MySQL. It's architected to run as effectively in a public or private cloud architecture as it does on dedicated hardware. It combines and extends many important SQL features with the scalability of a NoSQL database. Vitess can help you with the following problems: 1. Scaling a SQL database by allowing you to shard it, while keeping application changes to a minimum. 2. Migrating from bare-metal or VMs to a private or public cloud. 3. Deploying and managing a large number of SQL database instances. Vitess includes compliant JDBC and Go database drivers using a native query protocol. Additionally, it implements the MySQL server protocol which is compatible with virtually any other language. Vitess served all YouTube database traffic for over five years. Many enterprises have now adopted Vitess for their production needs. ## Features * Performance - Connection pooling - Multiplex front-end application queries onto a pool of MySQL connections to optimize performance. - Query de-duping – Reuse results of an in-flight query for any identical requests received while the in-flight query was still executing. - Transaction manager – Limit number of concurrent transactions and manage timeouts to optimize overall throughput. * Protection - Query rewriting and sanitization – Add limits and avoid non-deterministic updates. - Query blocking – Customize rules to prevent potentially problematic queries from hitting 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.7795817255973816
+  Content:
+----------------------------------------
+replication if it is not running. ## What is semi-sync replication? Semi-sync replication enables you to prevent your primary from acknowledging a transaction to the client until a replica confirms that it has received all the changes. This adds an extra guarantee that at least one other machine has a copy of the changes. This addresses the problem of a combination of lagging replication and network issues resulting in data loss. With semi-sync replication, even if you have network issues you shouldn’t lose your data. Please do note that when using semi-sync replication you will have to wait for your data to flow from the primary to the replica and then get a confirmation back to the primary. Thus each transaction may take longer. The length of time depends on the round trip time from the primary to the replica. ## Why would I use semi-sync replication? Semi-sync replication ensures data durability between the primary and at least one replica. Hardware failures are unavoidable but don't need to result in data loss if you run with semi-sync replication. --- title: Advanced Configuration docs_nav_disable_expand: true weight: 10 --- --- title: Compatibility weight: 2 --- ## What versions of MySQL or MariaDB work with Vitess? Please refer to our [Supported Databases](https://vitess.io/docs/overview/supported-databases/) for the most up-to-date information. ## What does it mean to say that Vitess "is MySQL compatible"? Will my application "just work"? Vitess supports much of MySQL, with some limitations. **Depending on your MySQL setup you will need to adjust queries that utilize any of the current unsupported cases.** For SQL syntax there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json). There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax. ## How is Vitess different from MySQL? MySQL is a popular open source database solution. MySQL delivers a fast, multi-threaded, multi-user, 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.6779817342758179
+  Content:
+----------------------------------------
+that utilize any of the current unsupported cases.** For SQL syntax there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json). There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax. ## How is Vitess different from MySQL? MySQL is a popular open source database solution. MySQL delivers a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server. However, MySQL starts running into limitations with large data sizes or large numbers of concurrent users. Vitess is a database scaling system designed to be used with MySQL. It enables deploying, scaling and managing large clusters of MySQL instances with built-in sharding, high availability and connection pooling. ## How is Vitess different from RDS for MySQL? RDS for MySQL is a managed service from AWS which has many of the same limitations as open source or enterprise MySQL. ## How is Vitess different from AWS Aurora for MySQL? AWS Aurora for MySQL is a managed service from AWS which can scale beyond the limitations of RDS for MySQL. However, it cannot scale to the same extent as Vitess. ## Are foreign keys supported in Vitess? We generally discourage the use of foreign keys, and more specifically foreign key constraints. There may be unexpected consequences when using them in sharded keyspaces. However, you can use foreign key constraints when their scope is contained within a shard or unsharded keyspace. You will need to [configure](https://vitess.io/docs/user-guides/vschema-guide/foreign-keys/) Vitess with the desired level of support. Please note that if you do shard or re-shard an existing keyspqce with foreign keys, you will need to take extra steps to confirm they are working as intended. --- title: Components weight: 3 --- ## What is VTGate and how does it work? VTGate is a lightweight proxy server that sits between your application and your shards, which contain your data. 
+----------------------------------------
+

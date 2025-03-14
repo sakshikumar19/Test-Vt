@@ -1,0 +1,41 @@
+DETAILED QUERY LOG - 2025-03-15 00:48:44
+======================================================================
+
+QUESTION: How can I determine which shard contains a specific row in Vitess?
+
+ANSWER: ### Determining the Shard for a Specific Row in Vitess
+To determine which shard contains a specific row in Vitess, you can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have determined the shard ID, you can use [manual shard targeting](http://vitess.io/docs/faq/operating-vitess/queries/?#can-i-address-a-specific-shard-if-i-want-to) to send that specific shard a query.
+
+Note that if the query contains the primary Vindex column, or an appropriate secondary Vindex column, you do not need to do this, and vtgate can route the query automatically.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9917450547218323
+  - Response Time: 23285.92 ms
+  - Retrieval Time (est.): 16300.14 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9917450547218323
+  Content:
+----------------------------------------
+- You need to prevent your SQL client from stripping the comments before sending to the server (the MySQL CLI strips comments by default) - You need to disable query normalization in vtgate (`--normalize_queries false`); to allow the comment to reach vttablet. - It only works for SELECT statements today, this might change in the future. {{< info >}} Note that streaming queries are not affected by either of these timeouts. {{< /info >}} ## Can I increase the resource pool timeout for streaming requests? Yes. You can adjust the vttablet flag for this. For example: `--queryserver-config-stream-pool-timeout=1s`. --- title: Operating Vitess docs_nav_disable_expand: true weight: 3 --- --- title: Advanced weight: 3 --- ## How can I know which shard contains a row for a table? You can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have determined the shard ID you can use [manual shard targeting](http://vitess.io/docs/faq/operating-vitess/queries/?#can-i-address-a-specific-shard-if-i-want-to) to send that specific shard a query. Note that if the query contains the primary Vindex column, or an appropriate secondary Vindex column, you do not need to do this, and vtgate can route the query automatically. ## Can I use Vitess to do cross-shard JOINs or Transactions? A horizontal sharding solution for MySQL like Vitess does allow you to do both cross-shard joins and transactions, but just because you can doesn’t mean you should. A sharded architecture will perform best if you design it well and play to its strength, e.g. favoring single-shard targeted writes within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach. --- title: Overview weight: 1 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.985853910446167
+  Content:
+----------------------------------------
++-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: Sharded Keyspace weight: 5 --- A sharded keyspace allows you to split a large database into smaller parts by distributing the rows of each table into different shards. In Vitess, each shard is assigned a `keyrange`. Every row has a keyspace id, and this value decides the shard in which the row lives. For key-value stores, the keyspace id is dictated by the value of the key, also known as the sharding key. In Vitess, this is known as the Primary Vindex. But it differs from a sharding key in the following ways: * Any column or a set of columns can be chosen to be the primary vindex. * The Vindex also decides the sharding function that controls how the data is distributed. * The sharding function is pluggable, allowing for user-defined sharding schemes. Vitess provides many predefined vindex types. The most popular ones are: * `xxhash`: for numbers * `unicode_loose_xxhash`: for text columns * `xxhash`: for binary columns In our example, we are going to designate `customer` as a sharded keyspace, and create a `customer` table in it. The schema for the table is as follows: ```sql create table customer(customer_id bigint, uname varchar(128), primary key(customer_id)); ``` In the VSchema, we need to designate which column should be the Primary Vindex, and choose the vindex type for it. The `customer_id` column seems to be the natural choice. Since it is a number, we will choose `xxhash` as the vindex type: ```json { "sharded": true, "vindexes": { "xxhash": { "type": "xxhash" } }, "tables": { "customer": { "column_vindexes": [{ "column": "customer_id", "name": "xxhash" }] } } } ``` In the above section, we are instantiating a vindex named `xxhash` from the vindex type `xxhash`. 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9819250106811523
+  Content:
+----------------------------------------
+keyspace and all queries are sent to it. 2. Connect to Vitess without specifying a keyspace (unspecified mode), but use qualified names for tables, like `keyspace.table` in your queries. However, once the setup exceeds the above complexity, VSchemas become a necessity. Vitess has a [working demo](https://github.com/vitessio/vitess/tree/main/examples/demo) of VSchemas. ## Sharding Model In Vitess, a `keyspace` is sharded by `keyspace ID` ranges. Each row is assigned a keyspace ID, which acts like a street address, and it determines the shard where the row lives. In some respect, one could say that the `keyspace ID` is the equivalent of a NoSQL sharding key. However, there are some differences: 1. The `keyspace ID` is a concept that is internal to Vitess. The application does not need to know anything about it. 2. There is no physical column that stores the actual `keyspace ID`. This value is computed as needed. This difference is significant enough that we do not refer to the keyspace ID as the sharding key. A [Primary Vindex](../vindexes/#the-primary-vindex) more closely resembles the NoSQL sharding key. Mapping to a `keyspace ID`, and then to a shard, gives us the flexibility to reshard the data with minimal disruption because the `keyspace ID` of each row remains unchanged through the process. ## Vindexes The Vschema contains the [Vindex](../vindexes) for any sharded tables. The Vindex tells Vitess where to find the shard that contains a particular row for a sharded table. Every VSchema must have at least one Vindex, called the [Primary Vindex](../vindexes/#the-primary-vindex), defined. The Primary Vindex is unique: given an input value, it produces a single keyspace ID, or value in the keyspace used to shard the table. The Primary Vindex is typically a functional Vindex: Vitess computes the keyspace ID as needed from a column in the sharded table. ## Sequences Auto-increment columns 
+----------------------------------------
+

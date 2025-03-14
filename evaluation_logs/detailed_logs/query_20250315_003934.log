@@ -1,0 +1,49 @@
+DETAILED QUERY LOG - 2025-03-15 00:39:34
+======================================================================
+
+QUESTION: What is VTGate and how does it work?
+
+ANSWER: ### VTGate Overview
+VTGate is a lightweight proxy server that sits between your application and your shards, which contain your data. 
+
+#### Key Functions of VTGate
+The main functions performed by VTGate are:
+* Keeps track of the Vitess cluster state and routes traffic accordingly.
+* Parses SQL queries fully and combines that understanding with Vitess VSchema to direct queries to the appropriate VTTablet (or set of VTTablets) and returns consolidated results back to the client.
+* Supports both the MySQL Protocol and the gRPC protocol, allowing your applications to connect to VTGate as if it is a MySQL Server.
+* Is aware of failovers in underlying shards and performs buffering of queries to reduce application impact.
+
+#### Scaling VTGate
+VTGates are essentially stateless, and in many cases, you can scale with query load by adding more VTGate instances.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9995189905166626
+  - Response Time: 22557.68 ms
+  - Retrieval Time (est.): 15790.38 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9995189905166626
+  Content:
+----------------------------------------
+with foreign keys, you will need to take extra steps to confirm they are working as intended. --- title: Components weight: 3 --- ## What is VTGate and how does it work? VTGate is a lightweight proxy server that sits between your application and your shards, which contain your data. VTGates are essentially stateless and in many cases, you can scale with query load by adding more VTGate instances. Some of the main functions performed by VTGate are as follows: * Keeps track of the Vitess cluster state, and route traffic accordingly. * Parses SQL queries fully, and combines that understanding with Vitess VSchema to direct queries to the appropriate VTTablet (or set of VTTablets) and returns consolidated results back to the client. * Supports both the MySQL Protocol and the gRPC protocol. Thus, your applications can connect to VTGate as if it is a MySQL Server. * Is aware of failovers in underlying shards, and performs buffering of queries to reduce application impact. ## What is VTTablet? How does it work with MySQL? A VTTablet is the Vitess component that both front-ends and, optionally, controls a running MySQL server. It accepts queries over gRPC and translates the queries back to MySQL, as well as speaking to MySQL to issue commands to control replication, take backups, etc. Things to note about VTTablet are: * Each mysqld needs a VTTablet that manages it. * VTTablet tracks long running queries and kills them when they exceed a defined threshold. * The combination of a VTTablet process and a MySQL process is called a Tablet. Please note that in some cases VTTablets may be deployed as [unmanaged/remote or partially managed](https://vitess.io/docs/reference/programs/vttablet/#managed-mysql). The recommendation is to start with unmanaged mode but eventually migrate to managed mode. Operations like resharding are possible only with vitess-managed MySQL 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9960881471633911
+  Content:
+----------------------------------------
+--- title: VTGate --- VTGate is a lightweight proxy server that routes traffic to the correct [VTTablet](../tablet) servers and returns consolidated results back to the client. It speaks both the MySQL Protocol and the Vitess gRPC protocol. Thus, your applications can connect to VTGate as if it is a MySQL Server. When routing queries to the appropriate VTTablet servers, VTGate considers the sharding scheme, required latency and the availability of tables and their underlying MySQL instances. **Related Vitess Documentation** * [Execution Plans](../execution-plans) --- title: Concepts description: Learn core Vitess concepts and terminology aliases: ['/docs/overview/concepts/'] weight: 3 --- --- title: Local Install via source for Mac description: Instructions for using Vitess on your macOS machine for testing purposes weight: 4 --- This guide covers installing Vitess locally for testing purposes, from pre-compiled binaries. We will launch multiple copies of `mysqld`, so it is recommended to have greater than 4GB RAM, as well as 20GB of available disk space. ## Install Brew For the purposes of installing software you will need to have brew installed. This will also install curl and git which will also be needed: ```sh curl https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh > brew-install.sh bash brew-install.sh ``` ## Install MySQL and etcd Once brew is installed you will need to install some dependencies for Vitess. Vitess supports the databases listed [here](../../overview/supported-databases/): ```sh brew install automake go mysql mysql-client etcd ``` When MySQL installs with brew it will startup, you will want to shut this process down, as Vitess will be managing the startup and shutdown of MySQL: ```sh $ brew services stop mysql ``` ### Install Node 18.16.0+ (required to run VTAdmin) ```bash brew install nvm nvm install --lts 18.16.0 nvm use 18.16.0 ``` See the [vtadmin README](https://github.com/vitessio/vitess/blob/main/web/vtadmin/README.md) for more details. ## PATH Settings With the tools you’ve just installed via brew, you will 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.819641649723053
+  Content:
+----------------------------------------
+within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach. --- title: Overview weight: 1 --- ## Why do auto-increment columns not work in sharded Vitess? Auto-increment columns do not work very well for sharded tables. Vitess sequences solve this problem. Sequence tables must be specified in the VSchema and then tied to table columns. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table. Vitess also supports sequence generators that can be used to generate new ids that work like MySQL auto increment columns. The VSchema allows you to associate table columns to sequence tables. ## What is resharding? How does it work? Vitess supports resharding, in which the number of shards is changed on a live cluster. This can be either splitting one or more shards into smaller pieces, or merging neighboring shards into bigger pieces. During resharding, the data in the source shards is copied into the destination shards, allowed to catch up on replication, and then compared against the original to ensure data integrity. Then the live serving infrastructure is shifted to the destination shards, and the source shards are deleted. ## How are shards named? Shard names have the following characteristics: - They represent a range, where the left number is included, but the right is not. - Their notation is hexadecimal. - They are left justified. - A - prefix means: anything less than the RHS value. - A - postfix means: anything greater than or equal to the LHS value. - A plain 
+----------------------------------------
+

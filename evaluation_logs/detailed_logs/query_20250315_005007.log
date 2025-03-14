@@ -1,0 +1,52 @@
+DETAILED QUERY LOG - 2025-03-15 00:50:07
+======================================================================
+
+QUESTION: How are shards named in Vitess?
+
+ANSWER: ### Shard Naming in Vitess
+Shards in Vitess are named based on the key ranges assigned to them. The naming conventions are as follows:
+* Shard names represent a range, where the left number is included, but the right is not.
+* The notation is hexadecimal.
+* The names are left-justified.
+* A `-` prefix means: anything less than the RHS value.
+* A `-` postfix means: anything greater than or equal to the LHS value.
+* A plain name without any prefix or postfix represents a specific range.
+
+Examples of shard names include:
+* `-80` (anything less than 80)
+* `80-` (anything greater than or equal to 80)
+* `0` or `-` (an unsharded keyspace)
+
+For more information on shard naming, you can refer to the [shard naming](../../../concepts/shard/#shard-naming) section.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9907467365264893
+  - Response Time: 20086.66 ms
+  - Retrieval Time (est.): 14060.66 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9907467365264893
+  Content:
+----------------------------------------
+within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach. --- title: Overview weight: 1 --- ## Why do auto-increment columns not work in sharded Vitess? Auto-increment columns do not work very well for sharded tables. Vitess sequences solve this problem. Sequence tables must be specified in the VSchema and then tied to table columns. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table. Vitess also supports sequence generators that can be used to generate new ids that work like MySQL auto increment columns. The VSchema allows you to associate table columns to sequence tables. ## What is resharding? How does it work? Vitess supports resharding, in which the number of shards is changed on a live cluster. This can be either splitting one or more shards into smaller pieces, or merging neighboring shards into bigger pieces. During resharding, the data in the source shards is copied into the destination shards, allowed to catch up on replication, and then compared against the original to ensure data integrity. Then the live serving infrastructure is shifted to the destination shards, and the source shards are deleted. ## How are shards named? Shard names have the following characteristics: - They represent a range, where the left number is included, but the right is not. - Their notation is hexadecimal. - They are left justified. - A - prefix means: anything less than the RHS value. - A - postfix means: anything greater than or equal to the LHS value. - A plain 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.7885313630104065
+  Content:
+----------------------------------------
+the data into the new cell. There are use cases where you may want to experimentally deploy changes to only some cells. Separating information from the global topo and local cells makes those experiments possible without affecting the entire deployment. Tools like [vtgate](../../../reference/programs/vtgate) and [vttablet](../../../reference/programs/vttablet) consume information from the local copy of the topo. An unsharded keyspace typically has a single shard named `0` or` -`. A sharded keyspace has shards named after the keyranges assigned to it, like `-80` and `80-`. Please refer to the section on [shard naming](../../../concepts/shard/#shard-naming) for more info on how shards are named. --- title: Monitoring weight: 16 aliases: ['/docs/launching/server-configuration/', '/docs/user-guides/server-configuration/', '/docs/user-guides/configuring-components/'] --- This section describes how to monitor Vitess components. Additionally, we recommend that you also add the necessary monitoring and alerting for the TopoServers as well as the MySQL instances running with each vttablet. ## Tools Vitess provides integrations with a variety of popular monitoring tools: Prometheus, InfluxDB and Datadog. The core infrastructure uses go's `expvar` package to export real-time variables visible as a JSON object served by the `/debug/vars` URL. The exported variables are CamelCase names. These names are algorithmically converted to the appropriate naming standards for each monitoring tool. For example, Prometheus uses a [snake case conversion algorithm](https://github.com/vitessio/vitess/blob/e259a08f017d9f1b5984fcaac5c54e26d1c7c31d/go/stats/prometheusbackend/prometheusbackend.go#L95-L116). In this case, the Prometheus exporter would convert the `Queries.Histograms.Select.500000` variable to `vttablet_queries_bucket{plan_type="Select",le="0.0005"}`. In the sections below, we will be describing the variables as seen in the `/debug/vars` page. The two critical Vitess processes to monitor are vttablet and vtgate. Additionally, we recommend that you setup monitoring for the underlying MySQL instances as commonly recommended in the MySQL community. Beyond what the tools export, it is important to also monitor system resource usage: CPU, memory, network and disk usage. Beyond the monitoring variables, the Vitess processes export additional information about their status on 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.5355870723724365
+  Content:
+----------------------------------------
++-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: Sharded Keyspace weight: 5 --- A sharded keyspace allows you to split a large database into smaller parts by distributing the rows of each table into different shards. In Vitess, each shard is assigned a `keyrange`. Every row has a keyspace id, and this value decides the shard in which the row lives. For key-value stores, the keyspace id is dictated by the value of the key, also known as the sharding key. In Vitess, this is known as the Primary Vindex. But it differs from a sharding key in the following ways: * Any column or a set of columns can be chosen to be the primary vindex. * The Vindex also decides the sharding function that controls how the data is distributed. * The sharding function is pluggable, allowing for user-defined sharding schemes. Vitess provides many predefined vindex types. The most popular ones are: * `xxhash`: for numbers * `unicode_loose_xxhash`: for text columns * `xxhash`: for binary columns In our example, we are going to designate `customer` as a sharded keyspace, and create a `customer` table in it. The schema for the table is as follows: ```sql create table customer(customer_id bigint, uname varchar(128), primary key(customer_id)); ``` In the VSchema, we need to designate which column should be the Primary Vindex, and choose the vindex type for it. The `customer_id` column seems to be the natural choice. Since it is a number, we will choose `xxhash` as the vindex type: ```json { "sharded": true, "vindexes": { "xxhash": { "type": "xxhash" } }, "tables": { "customer": { "column_vindexes": [{ "column": "customer_id", "name": "xxhash" }] } } } ``` In the above section, we are instantiating a vindex named `xxhash` from the vindex type `xxhash`. 
+----------------------------------------
+

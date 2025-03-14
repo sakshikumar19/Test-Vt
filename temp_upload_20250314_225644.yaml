@@ -1,0 +1,122 @@
+test_cases:
+  - question: "What versions of MySQL or MariaDB are compatible with Vitess?"
+    expected_chunks:
+      - "Please refer to our [Supported Databases](https://vitess.io/docs/overview/supported-databases/) for the most up-to-date information."
+
+  - question: "What does it mean for Vitess to be MySQL compatible?"
+    expected_chunks:
+      - "Vitess supports much of MySQL, with some limitations. Depending on your MySQL setup, you will need to adjust queries that utilize any of the current unsupported cases."
+      - "For SQL syntax, there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json)."
+      - "There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax."
+
+  - question: "How is Vitess different from MySQL?"
+    expected_chunks:
+      - "MySQL is a popular open-source database solution, but it runs into limitations with large data sizes or large numbers of concurrent users."
+      - "Vitess is a database scaling system designed to be used with MySQL. It enables deploying, scaling, and managing large clusters of MySQL instances with built-in sharding, high availability, and connection pooling."
+
+  - question: "Are foreign keys supported in Vitess?"
+    expected_chunks:
+      - "We generally discourage the use of foreign keys, especially foreign key constraints, in sharded keyspaces due to potential unexpected consequences."
+      - "However, foreign key constraints can be used when their scope is contained within a shard or unsharded keyspace. You will need to [configure](https://vitess.io/docs/user-guides/vschema-guide/foreign-keys/) Vitess with the desired level of support."
+
+  - question: "What is VTGate and how does it work?"
+    expected_chunks:
+      - "VTGate is a lightweight proxy server that sits between your application and your shards. It routes traffic, parses SQL queries, and combines that understanding with Vitess VSchema to direct queries to the appropriate VTTablet."
+      - "It supports both the MySQL Protocol and the gRPC protocol, allowing applications to connect to VTGate as if it were a MySQL Server."
+
+  - question: "What is a keyspace in Vitess?"
+    expected_chunks:
+      - "A keyspace is a logical database that typically maps to multiple MySQL instances, regardless of sharding. It appears as a single database from the application's viewpoint."
+      - "Reading data from a keyspace is just like reading from a MySQL database."
+
+  - question: "How can I monitor or get metrics from Vitess?"
+    expected_chunks:
+      - "All Vitess components have a web UI that you can access to see the state of each component. The first place to look is the /debug/status page."
+      - "Vitess component metrics can also be scraped via /metrics, which provides a Prometheus-format metric dump."
+
+  - question: "What is VReplication and how does it work?"
+    expected_chunks:
+      - "VReplication is used as a building block for features like resharding, migrating tables, and materialized views. It works as a stream that establishes replication from a source keyspace/shard to a target keyspace/shard."
+      - "It uses a combination of copying rows and filtered replication to keep data in sync between the source and target."
+
+  - question: "What is a VSchema and how does it work?"
+    expected_chunks:
+      - "VSchema, or Vitess Schema, describes how data is sharded within Vitess. It contains metadata about how tables are organized across shards and is used for routing queries and resharding operations."
+      - "It makes Vitess look and act like a single database server by defining sharding keys and strategies."
+
+  - question: "What is a primary Vindex and how does it work?"
+    expected_chunks:
+      - "The Primary Vindex for a table is analogous to a database primary key. It must be unique and determines the target shard for an inserted row based on the keyspace ID."
+      - "It not only defines the Sharding Key but also decides the Sharding Strategy."
+
+  - question: "How do Vitess replicas stay in sync?"
+    expected_chunks:
+      - "Every shard in Vitess uses normal MySQL replication to replicate changes from the primary to the replicas. Vitess can use asynchronous or semi-synchronous MySQL replication."
+      - "VReplication is not used to keep replicas in sync with the primary; it is used for features like resharding and materialized views."
+
+  - question: "What is the topology service in Vitess?"
+    expected_chunks:
+      - "The Topology Service is a set of backend processes that provide a key/value service for Vitess components. It is used for coordination, discovery, and storing configuration data."
+      - "It supports primary election, quorum reads, and writes, and is essential for Vitess cluster management."
+
+  - question: "How do I migrate out of Vitess?"
+    expected_chunks:
+      - "To migrate out of Vitess, you can take a backup of your data using methods like backup and restore, mysqldump, or go-mydumper."
+      - "The [Backup and Restore](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/) guide is recommended for regular backups, especially for large databases."
+
+  - question: "What are the main components of Vitess?"
+    expected_chunks:
+      - "Vitess consists of server processes like VTGate, VTTablet, VTCtld, and a Topology server (etcd). Tablets, which are combinations of VTTablet and mysqld processes, are also key components."
+      - "These components work together to provide sharding, high availability, and connection pooling for MySQL databases."
+
+  - question: "How do I debug elevated query latency on a Vitess primary?"
+    expected_chunks:
+      - "Inspect the graphs to see if QPS has gone up. If yes, drill down on the more detailed QPS graphs to see which table or user caused the increase."
+      - "If a table is identified, look at /debug/queryz for queries on that table."
+      - "If QPS did not go up, only latency did, inspect the per-table latency graphs."
+
+  - question: "What should I do if my Vitess primary starts up in read-only mode?"
+    expected_chunks:
+      - "To prevent accidentally accepting writes, our default my.cnf settings tell MySQL to always start up read-only."
+      - "If VTOrc is running, it will take care of converting the primary to read-write mode."
+      - "To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command."
+
+  - question: "How do I configure Vitess to use etcd as the topology service?"
+    expected_chunks:
+      - "To implement etcd, follow the steps on Vitess’ documentation [here](https://vitess.io/docs/reference/features/topology-service/#etcd-etcd2-implementation-new-version-of-etcd)."
+      - "We recommend using etcd if starting from scratch, as it is the default and preferred topology service for Vitess."
+
+  - question: "How do I create a VSchema for a sharded keyspace?"
+    expected_chunks:
+      - "For a sharded keyspace, you need to define a VSchema that specifies the sharding key for each table. The primary Vindex determines how rows are distributed across shards."
+      - "You can start by identifying a clear sharding key, such as a user ID or customer ID, and defining it as the primary Vindex for each table."
+
+  - question: "How do I monitor long-running queries in Vitess?"
+    expected_chunks:
+      - "VTTablet tracks long-running queries and kills them when they exceed a defined threshold. You can monitor these queries via the VTTablet web UI or metrics."
+      - "Use the /debug/status page on VTTablet to inspect query performance and identify problematic queries."
+
+  - question: "How do I perform a resharding operation in Vitess?"
+    expected_chunks:
+      - "Resharding in Vitess involves using VReplication to copy data from the source shards to the target shards while keeping them in sync."
+      - "You can use the `Reshard` command to automate the process, which creates VReplication streams behind the scenes."
+
+  - question: "How do I integrate Prometheus with Vitess for monitoring?"
+    expected_chunks:
+      - "Vitess components export metrics in Prometheus format on their HTTP port at /metrics. You can configure a Prometheus scraper to collect these metrics."
+      - "If using Kubernetes, the Vitess Operator can automatically configure Prometheus to scrape metrics from Vitess components."
+
+  - question: "How do I handle failovers in Vitess?"
+    expected_chunks:
+      - "Vitess handles failovers automatically using VTOrc or manual intervention with the `PlannedReparentShard` and `EmergencyReparentShard` commands."
+      - "During a failover, Vitess promotes a replica to primary and updates the topology service to reflect the new primary."
+
+  - question: "How do I configure semi-synchronous replication in Vitess?"
+    expected_chunks:
+      - "To configure semi-synchronous replication, you need to modify the MySQL configuration on the primary and replicas to enable the semi-sync plugin."
+      - "Vitess will then use semi-synchronous replication to ensure data durability in the presence of failures."
+
+  - question: "How do I troubleshoot a VReplication stream that is not progressing?"
+    expected_chunks:
+      - "Check the VReplication status using the `ShowVReplicationWorkflow` command to see if there are errors or delays."
+      - "Inspect the logs of the VTTablet managing the VReplication stream for any issues, such as network errors or MySQL replication lag."

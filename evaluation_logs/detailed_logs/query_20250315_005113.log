@@ -1,0 +1,46 @@
+DETAILED QUERY LOG - 2025-03-15 00:51:13
+======================================================================
+
+QUESTION: What is the difference between shard '0' and shard '-' in Vitess?
+
+ANSWER: ### Difference between Shard '0' and Shard '-' in Vitess
+In Vitess, both `0` and `-` are used to indicate that the keyspace in question is **unsharded**, meaning a single shard covers the entire keyrange.
+
+The key differences are:
+* **Legacy Support**: Both `0` and `-` are supported for legacy reasons.
+* **Merging**: You **cannot** merge into shard `0`, only into shard `-`.
+* **Recommendation**: It is **recommended** to use `-` instead of `0` due to the merging limitation and other reasons.
+
+In summary, while both `0` and `-` represent an unsharded keyspace, `-` is the preferred and more flexible option.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9389210343360901
+  - Response Time: 12940.32 ms
+  - Retrieval Time (est.): 9058.23 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9389210343360901
+  Content:
+----------------------------------------
+range, where the left number is included, but the right is not. - Their notation is hexadecimal. - They are left justified. - A - prefix means: anything less than the RHS value. - A - postfix means: anything greater than or equal to the LHS value. - A plain - denotes the full keyrange. An example of a shard name is `-80` and following the rules above this means: `-80` == `00-80` == `0000-8000` == `000000-800000` Similarly `80-` is not the same as `80-FF` because `80-FF` == `8000-FF00`. Therefore `FFFF` will be out of the `80-FF` range as `80-` means: ‘anything greater than or equal to `0x80` A hash vindex produces an 8-byte number. This means that all numbers less than `0x8000000000000000` will fall in shard `-80`. Any number with the highest bit set will be >= `0x8000000000000000`, and will therefore belong to shard `80-`. ## What does “/0” or “/-”mean? `0` or `-` indicates that the keyspace in question is unsharded. This means that a single shard covers the entire keyrange. Note that while both `0` and `-` are supported for legacy reasons, you can’t merge into shard `0` only `-`. For this and other reasons, it is recommended to use `-` instead of `0`. On the other hand a sharded cluster will have multiple keyranges, for example `-80` and `80-` if you have two shards. Note, that you can still manually target a single shard from your sharded cluster. You can read more about that [here](https://vitess.io/docs/faq/operating-vitess/queries/#can-i-address-a-specific-shard-if-i-want-to). --- title: VReplication weight: 2 --- ## How can Movetables be used with duplicate table names? If you have duplicate table names and want to use MoveTables you will need to take some action to prevent duplicate table routing issues. If you use move tables prior to following the steps below 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9124547243118286
+  Content:
+----------------------------------------
+a full data center or a subset of a data center, sometimes called a zone or availability zone. Vitess gracefully handles cell-level failures, such as when a cell is isolated from other cells by a network failure. A useful way to think of a cell is as a failure domain. Each cell in a Vitess implementation has a local Topology Service, which is hosted in that cell. The Topology Service contains most of the information about the Vitess tablets in its cell. This enables a cell to be taken down and rebuilt as a unit. Vitess limits cross-cell traffic for both data and metadata. Vitess currently serves reads only from the local cell. Writes will go cross-cell as necessary, to wherever the primary for that shard resides. ## What is a tablet? What are the types? A tablet is a combination of a mysqld process and a corresponding VTTablet process, usually running on the same machine. Each tablet is assigned a tablet type, which specifies what role it currently performs. The main tablet types are listed below: * PRIMARY - A tablet that contains a MySQL instance that is currently the MySQL primary for its shard. * REPLICA - A tablet that contains a MySQL replica that is eligible to be promoted to primary. Conventionally, these are reserved for serving live, user-facing read-only requests (like from the website’s frontend). * RDONLY - A tablet that contains a MySQL replica that cannot be promoted to primary. Conventionally, these are used for background processing jobs, such as taking backups, dumping data to other systems, heavy analytical queries, and resharding. There are some other tablet types like `BACKUP` and `RESTORE`. For information on how to use tablets please review this [user guide](https://vitess.io/docs/user-guides/configuration-basic/vttablet-mysql/). ## What is a shard? A shard is a physical division 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.8623226284980774
+  Content:
+----------------------------------------
++-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: Sharded Keyspace weight: 5 --- A sharded keyspace allows you to split a large database into smaller parts by distributing the rows of each table into different shards. In Vitess, each shard is assigned a `keyrange`. Every row has a keyspace id, and this value decides the shard in which the row lives. For key-value stores, the keyspace id is dictated by the value of the key, also known as the sharding key. In Vitess, this is known as the Primary Vindex. But it differs from a sharding key in the following ways: * Any column or a set of columns can be chosen to be the primary vindex. * The Vindex also decides the sharding function that controls how the data is distributed. * The sharding function is pluggable, allowing for user-defined sharding schemes. Vitess provides many predefined vindex types. The most popular ones are: * `xxhash`: for numbers * `unicode_loose_xxhash`: for text columns * `xxhash`: for binary columns In our example, we are going to designate `customer` as a sharded keyspace, and create a `customer` table in it. The schema for the table is as follows: ```sql create table customer(customer_id bigint, uname varchar(128), primary key(customer_id)); ``` In the VSchema, we need to designate which column should be the Primary Vindex, and choose the vindex type for it. The `customer_id` column seems to be the natural choice. Since it is a number, we will choose `xxhash` as the vindex type: ```json { "sharded": true, "vindexes": { "xxhash": { "type": "xxhash" } }, "tables": { "customer": { "column_vindexes": [{ "column": "customer_id", "name": "xxhash" }] } } } ``` In the above section, we are instantiating a vindex named `xxhash` from the vindex type `xxhash`. 
+----------------------------------------
+

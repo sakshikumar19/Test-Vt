@@ -619,36 +619,13 @@ class VitessFAQChatbot:
                 print("No valid files to ingest")
                 return
 
-            print(f"Starting document processing for {len(valid_file_paths)} files")
-            
-            # Process documents with our custom splitter first
-            all_documents = []
+            print(f"Starting indexing pipeline for {len(valid_file_paths)} files")
+
+            # Run the indexing pipeline correctly for each file
             for file_path in valid_file_paths:
-                docs = self.text_splitter.process_file(file_path)
-                if docs:
-                    print(f"Created {len(docs)} chunks from {file_path}")
-                    # Print metadata sample for verification
-                    if docs:
-                        print(f"Sample metadata: {docs[0].meta}")
-                    all_documents.extend(docs)
-            
-            if not all_documents:
-                print("No documents created after splitting")
-                return
-                
-            print(f"Total documents to index: {len(all_documents)}")
-                
-            # Clean the documents
-            cleaned_docs = self.cleaner.run(documents=all_documents)["documents"]
-            
-            # Generate embeddings
-            print("Generating embeddings...")
-            embedded_docs = self.doc_embedder.run(documents=cleaned_docs)["documents"]
-            
-            # Write to document store
-            print("Writing to document store...")
-            self.writer.run(documents=embedded_docs)
-            
+                result = self.indexing_pipeline.run({"text_converter": {"sources": [file_path]}})
+                print(f"Indexed file: {file_path}")
+
             # Verify documents in store after ingestion
             store_docs = self.document_store.filter_documents()
             print(f"Document store now contains {len(store_docs)} documents")
@@ -670,7 +647,7 @@ class VitessFAQChatbot:
             print(f"Error ingesting documents: {e}")
             import traceback
             traceback.print_exc()
-        
+                
     def get_fallback_response(self, question: str) -> str:
         """Generate a fallback response when retrieval fails"""
         return (

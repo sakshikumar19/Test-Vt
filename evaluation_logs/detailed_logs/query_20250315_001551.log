@@ -1,0 +1,65 @@
+DETAILED QUERY LOG - 2025-03-15 00:15:51
+======================================================================
+
+QUESTION: How do I configure Vitess to use etcd as the topology service?
+
+ANSWER: ### Configuring Vitess to Use Etcd as the Topology Service
+To configure Vitess to use etcd as the topology service, you need to follow these steps:
+
+1. **Create the Global Etcd Service**: Create a global etcd service using the following command:
+   ```sh
+etcd --enable-v2=true --data-dir ${VTDATAROOT}/etcd/global --listen-client-urls ${GLOBAL_ETCD_SERVER} \
+     --name=global --advertise-client-urls ${GLOBAL_ETCD_SERVER} --listen-peer-urls ${GLOBAL_ETCD_PEER_SERVER} \
+     --initial-advertise-peer-urls ${GLOBAL_ETCD_PEER_SERVER} --initial-cluster global=${GLOBAL_ETCD_PEER_SERVER} \
+     --initial-cluster-token=${TOKEN} --initial-cluster-state=new \
+     ${OTHER_ETCD_FLAGS}
+```
+   Replace the variables with your own values.
+
+2. **Configure Vtctld to Use the Global Topology Service**: Configure vtctld to use the global topology service using the following command:
+   ```sh
+vtctld --topo_implementation=etcd2 --topo_global_server_address=${GLOBAL_ETCD_SERVER} \
+       --topo_global_root=/vitess/global --port=15000 --grpc_port=15999 --service_map='grpc-vtctl,grpc-vtctld' \
+       ${OTHER_VTCTLD_FLAGS}
+```
+   Replace the variables with your own values.
+
+3. **Create a Local Etcd Instance**: Create a local etcd instance to store cell information. You can use a similar command to create the global etcd service, but with different variables for the local etcd instance.
+
+Remember to replace the variables with your own values, such as `VTDATAROOT`, `TOKEN`, `GLOBAL_ETCD_IP`, `GLOBAL_ETCD_SERVER`, `GLOBAL_ETCD_PEER_SERVER`, and `OTHER_ETCD_FLAGS`. Also, make sure to configure the local etcd instance with the correct cell name and root directory. 
+
+For best practices, the local root directory should be set to `/vitess/${CELL_NAME}`. 
+
+Note that Vitess previously supported Consul as a TopoServer, but it is now deprecated. Etcd is the recommended topology service for Vitess.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9942371845245361
+  - Response Time: 17454.38 ms
+  - Retrieval Time (est.): 12218.07 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9942371845245361
+  Content:
+----------------------------------------
+cell, using the vtctl client commands, define the local topology service with the global topology service. This is done by providing the global topology service with the cell name, the local topology service, and the root directory. NOTE: for best practices the local root dir should be set to `/vitess/${CELL_NAME}` (on consul this should be `vitess/${CELL_NAME}`) where `${CELL_NAME}` is the location of the cell `us-east-1, eu-west-2, etc`. * When starting a vttablet instance you must provide the global topology service as well as the `-tablet-path`, which implicitly includes the cell details. With this information the vttablet process will read the local topology details from the global topology server. * When starting a vtgate instance, you will provide the global topology service, as well as the `-cell` flag to explicitly provide the cell details. With this information the vtgate process will retrieve the connection details it needs to connect to the applicable local topology server(s). Unlike the vttablet process, if you are watching more than one cell, in `--cells_to_watch` you may connect to multiple local topology services. ### Simple local configuration For this example run through, we will be using two etcd services one for the global and one for local topology service. {{< warning >}} Production environments can and should be configured with multiple topology instances at the global and local levels. {{< /warning >}} 1. Create the global etcd service ``` sh export VTDATAROOT="/vt" TOKEN="SOMETHING_UNIQ_HERE" GLOBAL_ETCD_IP="192.168.0.2" GLOBAL_ETCD_SERVER="http://${GLOBAL_ETCD_IP}:2379" GLOBAL_ETCD_PEER_SERVER="http://${GLOBAL_ETCD_IP}:2380" etcd --enable-v2=true --data-dir ${VTDATAROOT}/etcd/global --listen-client-urls ${GLOBAL_ETCD_SERVER} \ --name=global --advertise-client-urls ${GLOBAL_ETCD_SERVER} --listen-peer-urls ${GLOBAL_ETCD_PEER_SERVER} \ --initial-advertise-peer-urls ${GLOBAL_ETCD_PEER_SERVER} --initial-cluster global=${GLOBAL_ETCD_PEER_SERVER} \ --initial-cluster-token=${TOKEN} --initial-cluster-state=new \ ${OTHER_ETCD_FLAGS} ``` 2. Configure vtctld to use the global topology service ``` sh vtctld --topo_implementation=etcd2 --topo_global_server_address=${GLOBAL_ETCD_SERVER} \ --topo_global_root=/vitess/global --port=15000 --grpc_port=15999 --service_map='grpc-vtctl,grpc-vtctld' \ ${OTHER_VTCTLD_FLAGS} ``` 3. Create a local etcd instance to store our cell information ``` sh CELL_NAME="US_EAST" CELL_TOKEN="${CELL_NAME}" CELL_ETCD_IP="192.168.0.3" 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9878572225570679
+  Content:
+----------------------------------------
+to configure and launch these servers. {{< info >}} Vitess previously supported Consul as a TopoServer. However, it is now deprecated because Consul does not natively support the ability to connect to multiple servers from a single program. This is a prerequisite for multi-region deployments. {{< /info >}} Vitess will store global metadata like keyspaces, shards and cells in the topserver. ## Choosing a TopoRoot Vitess allows you to share the same global toposerver for multiple clusters. For example, you may want to run separate testing, staging and production clusters. To support this separation, we allow you to assign a root directory in the Topo for each cluster. This directory is known as the `topo_global_root` and will need to be provided as a command line flag to every Vitess component. {{< info >}} In the case of ZooKeeper, you will also need to create this directory on the server. For etcd, the path will be automatically created on first write. {{< /info >}} The following command line options are required for every Vitess component: ```text --topo_implementation=etcd2 --topo_global_server_address=<comma_separated_addresses> --topo_global_root=/vitess/global ``` To avoid repetition we will use `<topo_flags>` in our examples to signify the above flags. Note that the topo implementation for etcd is `etcd2`. This is because Vitess uses the v2 API of etcd. {{< info >}} To be safe, you may want to bring up etcd with `--enable-v2=true`, even though it is the default value. Also, you will need to set the `ETCDCTL_API=2` environment variable before bringing up etcd. {{< /info >}} ## Moving to a different TopoServer It is generally not recommended that you migrate from one type of toposerver to another. However, if absolutely necessary, you can use the [topo2topo](../../../reference/features/topology-service/#migration-between-implementations) command line tool to perform this migration. ## Backups It is important to periodically backup the data in 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.986962616443634
+  Content:
+----------------------------------------
+and the regular Consul Lock API. The contents of the lock file is the ID of the current primary. Watches use the Consul long polling Get call. They cannot be interrupted, so we use a long poll whose duration is set by the `-topo_consul_watch_poll_duration` flag. Canceling a watch may have to wait until the end of a polling cycle with that duration before returning. ## Running multi cell environments When running an environment with multiple cells, it is essential to first create and configure your global topology service. Then define each local topology service to the global topology. As mentioned previously, the global and local topology service can reside on the same or separate implementation of etcd, zookeeper, or consul. At a higher level overview: * Create or locate an existing instance of etcd, zookeeper, or consul for the global topology service. * Use vtctl client commands to initialize the global topology service, providing the global topology implementation, and root directory. NOTE: for best practices the root dir should be set to `/vitess/global` (on consul this should be `vitess/global`). * (Optional) For each cell create an instance of etcd, zookeeper, or consul for the local topology service. This step is optional as you may use the existing implementation used by the global topology service. If you create a new local instances, the technologies must match. For example, if you are using etcd for your global topology service then you must use etcd for your local topology service. * For each cell, using the vtctl client commands, define the local topology service with the global topology service. This is done by providing the global topology service with the cell name, the local topology service, and the root directory. NOTE: for best practices the local root dir should be set to `/vitess/${CELL_NAME}` 
+----------------------------------------
+

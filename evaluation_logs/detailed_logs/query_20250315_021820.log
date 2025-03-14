@@ -1,0 +1,54 @@
+DETAILED QUERY LOG - 2025-03-15 02:18:20
+======================================================================
+
+QUESTION: How can I debug elevated query latency on a Vitess primary?
+
+ANSWER: ### Debugging Elevated Query Latency on a Vitess Primary
+To debug elevated query latency on a Vitess primary, follow these steps based on the provided context:
+
+1. **Inspect QPS Graphs**: First, check if the Queries Per Second (QPS) has increased. If it has, drill down into more detailed QPS graphs to identify which table or user is causing the increase.
+2. **Analyze Query Details**: If a specific table is identified, look at `/debug/queryz` for queries on that table to find the problematic queries.
+3. **Inform and Act**: Inform the engineer about the toxic queries. If it’s a specific user, consider stopping their job or throttling them to manage the load. As a last resort, blacklist the query to keep the system healthy.
+
+#### Alternative Scenarios:
+- **QPS Did Not Increase**: If QPS remains steady but latency increased, inspect per-table latency graphs. A specific table might be experiencing long-running, low QPS queries that skew the numbers. Identify and optimize these queries.
+- **Latency Across the Board**: If latency is up across all tables, inspect transaction latency. An increase here might indicate too many concurrent transactions, causing slowdowns. Check for transaction pool full errors and analyze the INFO logs for problematic transactions.
+- **No Obvious Culprit**: If no specific transaction or query seems to be the cause and nothing has changed in requests, check system variables for hardware faults, such as disk issues.
+
+#### Additional Tools:
+- **/queryz Page**: Inspect this page for query stats, especially for color-coded queries that may indicate problems.
+- **/debug/querylog**: Use this real-time stream to filter out unwanted tables and identify problematic queries.
+
+By following these steps and utilizing the provided tools, you can systematically debug and address elevated query latency on a Vitess primary.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9992483258247375
+  - Response Time: 17397.95 ms
+  - Retrieval Time (est.): 12178.57 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9992483258247375
+  Content:
+----------------------------------------
+--- title: Elevated query latency on primary description: Debug common issues with Vitess weight: 1 --- ## Elevated query latency on primary Diagnosis 1: Inspect the graphs to see if QPS has gone up. If yes, drill down on the more detailed QPS graphs to see which table, or user caused the increase. If a table is identified, look at /debug/queryz for queries on that table. Action: Inform engineer about the toxic queries. If it’s a specific user, you can stop their job or throttle them to keep the load manageable. As a last resort, blacklist query to allow the rest of the system to stay healthy. Diagnosis 2: QPS did not go up, only latency did. Inspect the per-table latency graphs. If it’s a specific table, then it’s most likely a long-running low QPS query that’s skewing the numbers. Identify the culprit query and take necessary steps to get it optimized. Such queries usually do not cause outage. So, there may not be a need to take extreme measures. Diagnosis 3: Latency seems to be up across the board. Inspect transaction latency. If this has gone up, then something is causing MySQL to run too many concurrent transactions which causes slow-down. See if there are any tx pool full errors. If there is an increase, the INFO logs will dump info about all transactions. From there, you should be able to if a specific sequence of statements is causing the problem. Once that is identified, find out the root cause. It could be network issues, or it could be a recent change in app behavior. Diagnosis 4: No particular transaction seems to be the culprit. Nothing seems to have changed in any of the requests. Look at system variables to see if there are hardware faults. Is the disk 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9401774406433105
+  Content:
+----------------------------------------
+specific query is causing the problem. There are two approaches: * Inspect the `/queryz` page and look at the stats for all queries of that table. It is very likely that the problematic ones have already risen to the top of the page and may be color-coded red. If not, talking a few snapshots of the page and comparing the stats should help identify the problematic query. * Real-time stream from `/debug/querylog`, filtering out unwanted tables and observing the results to identify the problematic query. Once the query is identified, the remedy depends on the situation. It could be a rewrite of the query to be more efficient, the creation of an additional index, or it could be the shutdown of an abusive batch process. The above guidelines have not required you to inspect MySQL. Over time, Vitess has evolved by improving its observability every time there was an incident. However, there may still be situations where the above approach is insufficient. If so, you will need to resort to looking inside MySQL to find out the root cause. The actual identification of the root cause may not be as straightforward as described above. Sometimes, an incident is caused by multiple factors. In such cases, using first principles of troubleshooting and understanding how the components communicate with each other may be the only way to get to the bottom of a problem. If you have exhausted all the recommendations given so far and still have not found the root cause, you may have to directly troubleshoot the problem at the MySQL level. ### Elevated Error Rates The analysis for elevated error rates for read queries follows steps similar to elevated latency. You should essentially use the same drill down approach to identify the root cause. ### Transaction timeouts Transaction timeouts 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.6543765664100647
+  Content:
+----------------------------------------
+the areas to focus on. The first step to troubleshooting is to have an established baseline. It is recommended that monitoring is set up for all the components as directed in the monitoring section. When there is an incident, the change in the graphs will likely help with identifying the root cause. ## Query Serving Most of the focus of Vitess monitoring centers around the cost of a query. Although not always true, we use the following rules of thumb to get a rough estimate: * In MySQL, the time taken by a query roughly translates to its actual cost. More often than not, the limiting factor is the number of disk IOPS. * In Vitess components, the payload contributes to the cost. The limiting factor is most often the CPU, followed by memory. * The cost of parsing and analyzing the input query has started to become significant. This is typically driven by the size and complexity of the query. Let us now go through some fire drills. ### Too many connections If you see an error that contains the string `Too many connections (errno 1040) (sqlstate 08004)`, then it means that the maximum number of connections allowed by MySQL has been exceeded. The remedy is to further increase the `max_connections` settings in MySQL. The other alternative is to reduce the pool sizes. As [recommended before](../vttablet-mysql/#starting-vttablet), the `max_connections` value should be set about double the number of connections allocated for pools. ### Elevated Query Latency This is one of the most common problems. It can show up as just an elevated latency with no external impact. Sometimes, the problem can be more acute where queries return errors due to timeouts. There can be multiple root causes. #### Approach 1: Validate resource usage and remove bottlenecks Check vtgate CPU usage: 
+----------------------------------------
+

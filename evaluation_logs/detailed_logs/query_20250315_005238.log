@@ -1,0 +1,39 @@
+DETAILED QUERY LOG - 2025-03-15 00:52:38
+======================================================================
+
+QUESTION: Can I merge shards in Vitess?
+
+ANSWER: ### Merging Shards in Vitess
+Yes, you can merge shards in Vitess. According to the context, to **reclaim overprovisioned resources**, you can **merge shards and/or keyspaces**. This process is listed in the table under the section describing the sharding (or resharding) processes for different types of requirements.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9382314085960388
+  - Response Time: 12566.0 ms
+  - Retrieval Time (est.): 8796.2 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9382314085960388
+  Content:
+----------------------------------------
+traffic. When you're ready to switch over, the migration occurs with only a few seconds of read-only downtime. During that time, existing data can be read, but new data cannot be written. The table below lists the sharding (or resharding) processes that you would typically perform for different types of requirements: Requirement | Action ----------- | ------ Uniformly increase read capacity | Add replicas or split shards Uniformly increase write capacity | Split shards Reclaim overprovisioned resources | Merge shards and/or keyspaces Increase geo-diversity | Add new cells and replicas Cool a hot tablet | For read access, add replicas or split shards. For write access, split shards. ### Additional Tools and Processes Vitess provides the following tools to help manage range-based shards: * The [vtctl GenerateShardRanges](../../../reference/programs/vtctl/shards/#generateshardranges) command-line tool supports generating shard ranges based on the provided number of shards. * There are additional [Shard specific vtctl](../../../reference/programs/vtctl/shards) command-line tools. * Client APIs account for sharding operations. --- title: SHOW extensions weight: 9 aliases: [] --- In Vitess, `SHOW` has been extended with additional functionality. ### SHOW Statements Vitess supports the following additional SHOW statements: * `SHOW GLOBAL GTID_EXECUTED [FROM <keyspace>]` -- retrieves the global gtid_executed status variable from each shard in the keyspace either selected or provided in the query. ```shell Example Output for customer keyspace: +----------+-------------------------------------------+-------+ | db_name | gtid_executed | shard | +----------+-------------------------------------------+-------+ | customer | e9148eb0-a320-11eb-8026-98af65a6dc4a:1-43 | 80- | | customer | e0f64aca-a320-11eb-9be4-98af65a6dc4a:1-43 | -80 | +----------+-------------------------------------------+-------+ ``` * `SHOW KEYSPACES` -- A list of keyspaces available. ```shell Example Output: +----------+ | Database | +----------+ | commerce | | customer | +----------+ ``` * `SHOW VITESS_REPLICATION_STATUS [LIKE "<Keyspace/<Shard>"]` (**Experimental; 12.0+**) -- Shows the Replication (_not_ [VReplication](../../vreplication/vreplication/)) health for the Vitess deployment. It returns a row for each `REPLICA` and `RDONLY` tablet in the topology -- with support 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.8920608758926392
+  Content:
+----------------------------------------
+of work to. Typically a routing operator will tell Vitess which keyspace to use when executing the piece of work, whether or not the keyspace is sharded, and, in the case of sharded keyspaces, which vindex to use. ### Scatter Queries A routing operator which specifies a sharded keyspace, but which does not specify a vindex, will "scatter" to all shards in a sharded keyspace. A "scatter" query contains one or more pieces of work routed to a sharded keyspace, but which cannot be routed using a vindex. Note that not all queries which are sent to multiple (or all) shards in a sharded keyspace are considered scatter queries. ### Observing Execution Plans Cached execution plans can be observed at the VTGate level by browsing the `/queryz` end point. Starting with Vitess 16, individual statement plans can also be observed with [`VExplain`](../../user-guides/sql/explain-format-vtexplain). **Related Vitess Documentation** * [VTGate](../vtgate) --- title: Keyspace ID --- The *keyspace ID* is the value that is used to decide on which shard a given row lives. [Range-based Sharding](../../reference/features/sharding/#key-ranges-and-partitions) refers to creating shards that each cover a particular range of keyspace IDs. Using this technique means you can split a given shard by replacing it with two or more new shards that combine to cover the original range of keyspace IDs, without having to move any records in other shards. The keyspace ID itself is computed using a function of some column in your data, such as the user ID. Vitess allows you to choose from a variety of functions ([vindexes](../../reference/features/vindexes/)) to perform this mapping. This allows you to choose the right one to achieve optimal distribution of the data across shards. --- title: Keyspace --- A *keyspace* is a logical database. If you're using [sharding](http://en.wikipedia.org/wiki/Shard_(database_architecture)), a keyspace maps to multiple MySQL databases; if you're not using 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.7678878307342529
+  Content:
+----------------------------------------
+this approach are: - Each migration requires a failover (aka _successover_, aka _planned reparent_). - Total wall clock time is higher since we run the same migration in sequence on different servers. ## Schema change cycle and operation The cycle of schema changes, from idea to production, is complex, involves multiple environments and possibly multiple teams. Below is one possible breakdown common in production. Notice how even interacting with the database itself takes multiple steps: 1. Design: the developer designs a change, tests locally 2. Publish: the developer requests a review of their changes (e.g. on a Pull Request) 3. Review: developer's colleagues and database engineers to check the changes and their impact 4. Formalize: what is the precise `ALTER TABLE` statement to be executed? 5. Locate: where does this change need to go? Which keyspace/cluster? Is this cluster sharded? What are the shards? Having located the affected MySQL clusters, which is the `primary` server per cluster? 6. Schedule: is there an already running migration on the relevant keyspace/cluster(s)? 7. Execute: invoke the command. In the time we waited, did the identity of `primary` servers change? 8. Audit/control: is the migration in progress? Do we need to abort for some reason? 9. Cut-over/complete: a potential manual step to complete the migration process 10. Cleanup: what do you do with the old tables? An immediate `DROP` is likely not advisable. What's the alternative? 11. Notify user: let the developer know their changes are now in production. 12. Deploy & merge: the developer completes their process. Steps `4` - `10` are tightly coupled with the database or with the infrastructure around the database. ## Schema change and Vitess Vitess solves or automates multiple parts of the flow: ### Formalize In [managed, online schema changes](../schema-changes/managed-online-schema-changes/) the user supplies a valid SQL `ALTER TABLE` 
+----------------------------------------
+

@@ -1,0 +1,41 @@
+DETAILED QUERY LOG - 2025-03-15 00:50:23
+======================================================================
+
+QUESTION: What does '0' or '-' mean in shard naming?
+
+ANSWER: ### Shard Naming: '0' or '-'
+In Vitess, `0` or `-` indicates that the keyspace in question is **unsharded**. This means that a single shard covers the entire keyrange.
+
+Note that while both `0` and `-` are supported for legacy reasons, you can’t merge into shard `0` only `-`. It is recommended to use `-` instead of `0`.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9903362989425659
+  - Response Time: 16667.88 ms
+  - Retrieval Time (est.): 11667.52 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9903362989425659
+  Content:
+----------------------------------------
+range, where the left number is included, but the right is not. - Their notation is hexadecimal. - They are left justified. - A - prefix means: anything less than the RHS value. - A - postfix means: anything greater than or equal to the LHS value. - A plain - denotes the full keyrange. An example of a shard name is `-80` and following the rules above this means: `-80` == `00-80` == `0000-8000` == `000000-800000` Similarly `80-` is not the same as `80-FF` because `80-FF` == `8000-FF00`. Therefore `FFFF` will be out of the `80-FF` range as `80-` means: ‘anything greater than or equal to `0x80` A hash vindex produces an 8-byte number. This means that all numbers less than `0x8000000000000000` will fall in shard `-80`. Any number with the highest bit set will be >= `0x8000000000000000`, and will therefore belong to shard `80-`. ## What does “/0” or “/-”mean? `0` or `-` indicates that the keyspace in question is unsharded. This means that a single shard covers the entire keyrange. Note that while both `0` and `-` are supported for legacy reasons, you can’t merge into shard `0` only `-`. For this and other reasons, it is recommended to use `-` instead of `0`. On the other hand a sharded cluster will have multiple keyranges, for example `-80` and `80-` if you have two shards. Note, that you can still manually target a single shard from your sharded cluster. You can read more about that [here](https://vitess.io/docs/faq/operating-vitess/queries/#can-i-address-a-specific-shard-if-i-want-to). --- title: VReplication weight: 2 --- ## How can Movetables be used with duplicate table names? If you have duplicate table names and want to use MoveTables you will need to take some action to prevent duplicate table routing issues. If you use move tables prior to following the steps below 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9374731183052063
+  Content:
+----------------------------------------
+the data into the new cell. There are use cases where you may want to experimentally deploy changes to only some cells. Separating information from the global topo and local cells makes those experiments possible without affecting the entire deployment. Tools like [vtgate](../../../reference/programs/vtgate) and [vttablet](../../../reference/programs/vttablet) consume information from the local copy of the topo. An unsharded keyspace typically has a single shard named `0` or` -`. A sharded keyspace has shards named after the keyranges assigned to it, like `-80` and `80-`. Please refer to the section on [shard naming](../../../concepts/shard/#shard-naming) for more info on how shards are named. --- title: Monitoring weight: 16 aliases: ['/docs/launching/server-configuration/', '/docs/user-guides/server-configuration/', '/docs/user-guides/configuring-components/'] --- This section describes how to monitor Vitess components. Additionally, we recommend that you also add the necessary monitoring and alerting for the TopoServers as well as the MySQL instances running with each vttablet. ## Tools Vitess provides integrations with a variety of popular monitoring tools: Prometheus, InfluxDB and Datadog. The core infrastructure uses go's `expvar` package to export real-time variables visible as a JSON object served by the `/debug/vars` URL. The exported variables are CamelCase names. These names are algorithmically converted to the appropriate naming standards for each monitoring tool. For example, Prometheus uses a [snake case conversion algorithm](https://github.com/vitessio/vitess/blob/e259a08f017d9f1b5984fcaac5c54e26d1c7c31d/go/stats/prometheusbackend/prometheusbackend.go#L95-L116). In this case, the Prometheus exporter would convert the `Queries.Histograms.Select.500000` variable to `vttablet_queries_bucket{plan_type="Select",le="0.0005"}`. In the sections below, we will be describing the variables as seen in the `/debug/vars` page. The two critical Vitess processes to monitor are vttablet and vtgate. Additionally, we recommend that you setup monitoring for the underlying MySQL instances as commonly recommended in the MySQL community. Beyond what the tools export, it is important to also monitor system resource usage: CPU, memory, network and disk usage. Beyond the monitoring variables, the Vitess processes export additional information about their status on 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.13611039519309998
+  Content:
+----------------------------------------
+a binary value equal to or higher than 0x80 are assigned to the other shard. Several sample key ranges are shown below: ``` sh Start=[], End=[]: Full Key Range Start=[], End=[0x80]: Lower half of the Key Range. Start=[0x80], End=[]: Upper half of the Key Range. Start=[0x40], End=[0x80]: Second quarter of the Key Range. Start=[0xFF00], End=[0xFF80]: Second to last 1/512th of the Key Range. ``` Two key ranges are consecutive if the end value of one range equals the start value of the other range. ### Shard Names A shard's name identifies the start and end of the shard's key range, printed in hexadecimal and separated by a hyphen. For instance, if a shard's key range is the array of bytes beginning with [ 0x80 ] and ending, noninclusively, with [ 0xc0], then the shard's name is `80-c0`. Using this naming convention, the following four shards would be a valid full partition: * -40 * 40-80 * 80-c0 * c0- Shards do not need to handle the same size portion of the key space. For example, the following five shards would also be a valid full partition, possibly with a highly uneven distribution of keys. * -80 * 80-c0 * c0-dc00 * dc00-dc80 * dc80- ## Resharding Resharding describes the process of updating the sharding scheme for a keyspace and dynamically reorganizing data to match the new scheme. During resharding, Vitess copies, verifies, and keeps data up-to-date on new shards while the existing shards continue to serve live read and write traffic. When you're ready to switch over, the migration occurs with only a few seconds of read-only downtime. During that time, existing data can be read, but new data cannot be written. The table below lists the sharding (or resharding) processes that you would typically perform for different types of 
+----------------------------------------
+

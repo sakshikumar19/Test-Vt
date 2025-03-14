@@ -1,0 +1,257 @@
+=== GROUND TRUTH EVALUATION RESULTS ===
+Started: 2025-03-15 00:48:21
+Test Cases: 19
+==================================================
+
+TEST CASE 1: How can I determine which shard contains a specific row in Vitess?
+Expected Chunks: 2
+  1. You can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have the shard ID, you can use manual shard targeting to send queries to that specific shard.
+  2. If the query contains the primary Vindex column or an appropriate secondary Vindex column, VTGate can automatically route the query without manual shard targeting.
+Retrieved Chunks: 3
+  1. - You need to prevent your SQL client from stripping the comments before sending to the server (the ...
+  2. +-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: S...
+  3. keyspace and all queries are sent to it. 2. Connect to Vitess without specifying a keyspace (unspeci...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['You can use the primary Vindex column to query the Vindex and discover the shard ID. Once you have the shard ID, you can use manual shard targeting to send queries to that specific shard.', 'If the query contains the primary Vindex column or an appropriate secondary Vindex column, VTGate can automatically route the query without manual shard targeting.']
+--------------------------------------------------
+
+TEST CASE 2: Can I perform cross-shard JOINs or transactions in Vitess?
+Expected Chunks: 2
+  1. Vitess supports cross-shard JOINs and transactions, but it is generally not recommended due to performance costs.
+  2. Enabling two-phase commit for cross-shard writes is possible but comes at a significant performance cost. Adjusting the schema or workload to favor single-shard transactions is usually a better approach.
+Retrieved Chunks: 3
+  1. - You need to prevent your SQL client from stripping the comments before sending to the server (the ...
+  2. it stayed together. Or, if your database is extremely small. However, if you reach a point where the...
+  3. modify a [subset of system settings](https://github.com/vitessio/vitess/blob/main/go/vt/sysvars/sysv...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Vitess supports cross-shard JOINs and transactions, but it is generally not recommended due to performance costs.', 'Enabling two-phase commit for cross-shard writes is possible but comes at a significant performance cost. Adjusting the schema or workload to favor single-shard transactions is usually a better approach.']
+--------------------------------------------------
+
+TEST CASE 3: Why don’t auto-increment columns work well in sharded Vitess?
+Expected Chunks: 2
+  1. Auto-increment columns do not ensure uniqueness across sharded tables. Vitess solves this problem using sequences, which generate unique IDs across shards.
+  2. Sequence tables are specified in the VSchema and tied to table columns. VTGate generates IDs for these columns during inserts if no value is provided.
+Retrieved Chunks: 3
+  1. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  2. Primary Vindex is unique: given an input value, it produces a single keyspace ID, or value in the ke...
+  3. to plan out a reshard operation diligently. However, you can always _reshard again_ later if your sh...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Auto-increment columns do not ensure uniqueness across sharded tables. Vitess solves this problem using sequences, which generate unique IDs across shards.', 'Sequence tables are specified in the VSchema and tied to table columns. VTGate generates IDs for these columns during inserts if no value is provided.']
+--------------------------------------------------
+
+TEST CASE 4: What is resharding, and how does it work in Vitess?
+Expected Chunks: 2
+  1. Resharding is the process of changing the number of shards in a live Vitess cluster, either by splitting shards into smaller pieces or merging them into larger ones.
+  2. During resharding, data is copied from source shards to destination shards, allowed to catch up on replication, and verified for integrity before switching live traffic to the new shards.
+Retrieved Chunks: 3
+  1. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  2. of a VTTablet process and a MySQL process is called a Tablet. Please note that in some cases VTTable...
+  3. A plain `-` denotes the full keyrange. Thus: `-80` == `00-80` == `0000-8000` == `000000-800000` == `...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Resharding is the process of changing the number of shards in a live Vitess cluster, either by splitting shards into smaller pieces or merging them into larger ones.', 'During resharding, data is copied from source shards to destination shards, allowed to catch up on replication, and verified for integrity before switching live traffic to the new shards.']
+--------------------------------------------------
+
+TEST CASE 5: How are shards named in Vitess?
+Expected Chunks: 2
+  1. Shard names represent a range in hexadecimal notation, where the left number is included, but the right is not. For example, `-80` means anything less than `0x80`.
+  2. A `-` prefix means anything less than the RHS value, while a `-` postfix means anything greater than or equal to the LHS value. A plain `-` denotes the full keyrange.
+Retrieved Chunks: 3
+  1. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  2. the data into the new cell. There are use cases where you may want to experimentally deploy changes ...
+  3. +-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: S...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Shard names represent a range in hexadecimal notation, where the left number is included, but the right is not. For example, `-80` means anything less than `0x80`.', 'A `-` prefix means anything less than the RHS value, while a `-` postfix means anything greater than or equal to the LHS value. A plain `-` denotes the full keyrange.']
+--------------------------------------------------
+
+TEST CASE 6: What does '0' or '-' mean in shard naming?
+Expected Chunks: 2
+  1. `0` or `-` indicates that the keyspace is unsharded, meaning a single shard covers the entire keyrange. While both are supported, `-` is recommended over `0` for consistency.
+  2. In a sharded cluster, shards are named with keyranges like `-80` and `80-`, but you can still manually target a single shard if needed.
+Retrieved Chunks: 3
+  1. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  2. the data into the new cell. There are use cases where you may want to experimentally deploy changes ...
+  3. a binary value equal to or higher than 0x80 are assigned to the other shard. Several sample key rang...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['`0` or `-` indicates that the keyspace is unsharded, meaning a single shard covers the entire keyrange. While both are supported, `-` is recommended over `0` for consistency.', 'In a sharded cluster, shards are named with keyranges like `-80` and `80-`, but you can still manually target a single shard if needed.']
+--------------------------------------------------
+
+TEST CASE 7: How can I use MoveTables with duplicate table names?
+Expected Chunks: 2
+  1. To use MoveTables with duplicate table names, you need to define specific routing rules to avoid ambiguity. Start by exporting the current routing rules using `vtctlclient GetRoutingRules`.
+  2. Edit the exported rules to add explicit routing for the source schema, then apply the updated rules using `vtctlclient ApplyRoutingRules`. This ensures queries are routed correctly before using MoveTables.
+Retrieved Chunks: 3
+  1. title: VReplication weight: 2 --- ## How can Movetables be used with duplicate table names? If you h...
+  2. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  3. activity; the `MoveTables` operation is performed online: ```bash vtctldclient MoveTables --target-k...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['To use MoveTables with duplicate table names, you need to define specific routing rules to avoid ambiguity. Start by exporting the current routing rules using `vtctlclient GetRoutingRules`.', 'Edit the exported rules to add explicit routing for the source schema, then apply the updated rules using `vtctlclient ApplyRoutingRules`. This ensures queries are routed correctly before using MoveTables.']
+--------------------------------------------------
+
+TEST CASE 8: What happens if I don’t handle duplicate table names before using MoveTables?
+Expected Chunks: 2
+  1. If duplicate table names are not handled before using MoveTables, you will encounter errors like `ERROR 1105 (HY000): vtgate: ambiguous table reference`.
+  2. To avoid this, you must define explicit routing rules for the source schema to ensure queries are routed correctly.
+Retrieved Chunks: 3
+  1. title: VReplication weight: 2 --- ## How can Movetables be used with duplicate table names? If you h...
+  2. activity; the `MoveTables` operation is performed online: ```bash vtctldclient MoveTables --target-k...
+  3. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['If duplicate table names are not handled before using MoveTables, you will encounter errors like `ERROR 1105 (HY000): vtgate: ambiguous table reference`.', 'To avoid this, you must define explicit routing rules for the source schema to ensure queries are routed correctly.']
+--------------------------------------------------
+
+TEST CASE 9: How does Vitess handle sequence generation for sharded tables?
+Expected Chunks: 2
+  1. Vitess uses sequence tables to generate unique IDs for sharded tables. These sequences are defined in the VSchema and tied to table columns.
+  2. During an insert, if no value is specified for a sequence column, VTGate generates a unique ID using the sequence table, ensuring uniqueness across shards.
+Retrieved Chunks: 3
+  1. by case examples are available in the documentation starting [here](https://vitess.io/docs/user-guid...
+  2. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  3. Primary Vindex is unique: given an input value, it produces a single keyspace ID, or value in the ke...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Vitess uses sequence tables to generate unique IDs for sharded tables. These sequences are defined in the VSchema and tied to table columns.', 'During an insert, if no value is specified for a sequence column, VTGate generates a unique ID using the sequence table, ensuring uniqueness across shards.']
+--------------------------------------------------
+
+TEST CASE 10: What is the difference between shard '0' and shard '-' in Vitess?
+Expected Chunks: 2
+  1. Both `0` and `-` indicate an unsharded keyspace, where a single shard covers the entire keyrange. However, `-` is recommended over `0` for consistency and compatibility.
+  2. While `0` is supported for legacy reasons, you cannot merge into shard `0`; you must use `-` for merging operations.
+Retrieved Chunks: 3
+  1. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  2. a full data center or a subset of a data center, sometimes called a zone or availability zone. Vites...
+  3. +-------------+-------+ | 4 | dan | +-------------+-------+ 1 row in set (0.00 sec) ``` --- title: S...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Both `0` and `-` indicate an unsharded keyspace, where a single shard covers the entire keyrange. However, `-` is recommended over `0` for consistency and compatibility.', 'While `0` is supported for legacy reasons, you cannot merge into shard `0`; you must use `-` for merging operations.']
+--------------------------------------------------
+
+TEST CASE 11: How does Vitess ensure data integrity during resharding?
+Expected Chunks: 2
+  1. During resharding, Vitess copies data from source shards to destination shards and allows the destination shards to catch up on replication.
+  2. The data is then compared against the original source shards to ensure integrity before switching live traffic to the new shards.
+Retrieved Chunks: 3
+  1. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  2. --sql-file create_customer_sharded.sql customer ``` ## Create New Shards At this point, you have fin...
+  3. A plain `-` denotes the full keyrange. Thus: `-80` == `00-80` == `0000-8000` == `000000-800000` == `...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['During resharding, Vitess copies data from source shards to destination shards and allows the destination shards to catch up on replication.', 'The data is then compared against the original source shards to ensure integrity before switching live traffic to the new shards.']
+--------------------------------------------------
+
+TEST CASE 12: What are the performance implications of cross-shard transactions in Vitess?
+Expected Chunks: 2
+  1. Cross-shard transactions in Vitess come with significant performance costs, especially when two-phase commit is enabled.
+  2. It is generally better to design your schema and workload to favor single-shard transactions, as this aligns with the strengths of a sharded architecture.
+Retrieved Chunks: 3
+  1. modify a [subset of system settings](https://github.com/vitessio/vitess/blob/main/go/vt/sysvars/sysv...
+  2. - You need to prevent your SQL client from stripping the comments before sending to the server (the ...
+  3. results in transactions also falling within the same shard, but there are situations where this may ...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Cross-shard transactions in Vitess come with significant performance costs, especially when two-phase commit is enabled.', 'It is generally better to design your schema and workload to favor single-shard transactions, as this aligns with the strengths of a sharded architecture.']
+--------------------------------------------------
+
+TEST CASE 13: How do I manually target a specific shard in Vitess?
+Expected Chunks: 2
+  1. You can manually target a specific shard by using the shard-specific database name, such as `ks:-80` for keyspace `ks` and shard `-80`.
+  2. This is called manual shard targeting and should be used with caution, as it can lead to inserting rows into the wrong shard if not handled properly.
+Retrieved Chunks: 3
+  1. - You need to prevent your SQL client from stripping the comments before sending to the server (the ...
+  2. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  3. target keyspaces must have the exact same shard definitions - Query routing is all or nothing per sh...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['You can manually target a specific shard by using the shard-specific database name, such as `ks:-80` for keyspace `ks` and shard `-80`.', 'This is called manual shard targeting and should be used with caution, as it can lead to inserting rows into the wrong shard if not handled properly.']
+--------------------------------------------------
+
+TEST CASE 14: What is the purpose of sequence tables in Vitess?
+Expected Chunks: 2
+  1. Sequence tables in Vitess are used to generate unique IDs for sharded tables, ensuring uniqueness across shards.
+  2. They are defined in the VSchema and tied to table columns, allowing VTGate to generate IDs during inserts if no value is provided.
+Retrieved Chunks: 3
+  1. you get familiar with the JSON syntax as it will be useful for troubleshooting if something does not...
+  2. is reserved when the statement is issued, not when the transaction is committed). * When inserting a...
+  3. by case examples are available in the documentation starting [here](https://vitess.io/docs/user-guid...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Sequence tables in Vitess are used to generate unique IDs for sharded tables, ensuring uniqueness across shards.', 'They are defined in the VSchema and tied to table columns, allowing VTGate to generate IDs during inserts if no value is provided.']
+--------------------------------------------------
+
+TEST CASE 15: How do I apply routing rules in Vitess to handle duplicate table names?
+Expected Chunks: 2
+  1. To apply routing rules, first export the current rules using `vtctlclient GetRoutingRules` and save them to a file.
+  2. Edit the file to add explicit routing for the source schema, then apply the updated rules using `vtctlclient ApplyRoutingRules -rules='$(cat /tmp/whatever)'`.
+Retrieved Chunks: 3
+  1. title: VReplication weight: 2 --- ## How can Movetables be used with duplicate table names? If you h...
+  2. here we specify the `--cell` flag so that cell's topo base path — stored in its `CellInfo` record in...
+  3. true } ``` This flag causes VTGate to automatically expand expressions like `select *` or insert sta...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['To apply routing rules, first export the current rules using `vtctlclient GetRoutingRules` and save them to a file.', "Edit the file to add explicit routing for the source schema, then apply the updated rules using `vtctlclient ApplyRoutingRules -rules='$(cat /tmp/whatever)'`."]
+--------------------------------------------------
+
+TEST CASE 16: What is the significance of the '-' prefix and postfix in shard names?
+Expected Chunks: 2
+  1. The `-` prefix in shard names (e.g., `-80`) means anything less than the RHS value, while the `-` postfix (e.g., `80-`) means anything greater than or equal to the LHS value.
+  2. A plain `-` denotes the full keyrange, and this notation is used to define the range of keys each shard is responsible for.
+Retrieved Chunks: 3
+  1. | | version_tokens_session | CheckAndIgnore | **Related Vitess Documentation** * [VTGate](../vtgate)...
+  2. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  3. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['The `-` prefix in shard names (e.g., `-80`) means anything less than the RHS value, while the `-` postfix (e.g., `80-`) means anything greater than or equal to the LHS value.', 'A plain `-` denotes the full keyrange, and this notation is used to define the range of keys each shard is responsible for.']
+--------------------------------------------------
+
+TEST CASE 17: Can I merge shards in Vitess?
+Expected Chunks: 2
+  1. Yes, Vitess supports merging shards during resharding. You can merge neighboring shards into larger pieces, but you must use the `-` shard name for merging operations.
+  2. Merging shards involves copying data, catching up on replication, and verifying data integrity before switching live traffic to the merged shard.
+Retrieved Chunks: 3
+  1. traffic. When you're ready to switch over, the migration occurs with only a few seconds of read-only...
+  2. of work to. Typically a routing operator will tell Vitess which keyspace to use when executing the p...
+  3. this approach are: - Each migration requires a failover (aka _successover_, aka _planned reparent_)....
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Yes, Vitess supports merging shards during resharding. You can merge neighboring shards into larger pieces, but you must use the `-` shard name for merging operations.', 'Merging shards involves copying data, catching up on replication, and verifying data integrity before switching live traffic to the merged shard.']
+--------------------------------------------------
+
+TEST CASE 18: What is the difference between shard '80-' and '80-FF' in Vitess?
+Expected Chunks: 2
+  1. Shard `80-` means anything greater than or equal to `0x80`, while `80-FF` means anything from `0x8000` to `0xFF00`.
+  2. This distinction is important because `80-FF` does not include values like `0xFFFF`, which would fall under `80-`.
+Retrieved Chunks: 3
+  1. A plain `-` denotes the full keyrange. Thus: `-80` == `00-80` == `0000-8000` == `000000-800000` == `...
+  2. range, where the left number is included, but the right is not. - Their notation is hexadecimal. - T...
+  3. | | version_tokens_session | CheckAndIgnore | **Related Vitess Documentation** * [VTGate](../vtgate)...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['Shard `80-` means anything greater than or equal to `0x80`, while `80-FF` means anything from `0x8000` to `0xFF00`.', 'This distinction is important because `80-FF` does not include values like `0xFFFF`, which would fall under `80-`.']
+--------------------------------------------------
+
+TEST CASE 19: How does Vitess handle replication during resharding?
+Expected Chunks: 2
+  1. During resharding, Vitess copies data from source shards to destination shards and ensures the destination shards catch up on replication.
+  2. The data is then compared against the source shards to ensure integrity before switching live traffic to the new shards.
+Retrieved Chunks: 3
+  1. the following actions when used to initialize the first primary in the shard: 1. Promote the new pri...
+  2. within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes...
+  3. a binary value equal to or higher than 0x80 are assigned to the other shard. Several sample key rang...
+Chunks Found: 0/2
+Accuracy: 0.00%
+Missing Chunks: ['During resharding, Vitess copies data from source shards to destination shards and ensures the destination shards catch up on replication.', 'The data is then compared against the source shards to ensure integrity before switching live traffic to the new shards.']
+--------------------------------------------------
+
+=== SUMMARY STATISTICS ===
+Total Test Cases: 19
+Total Expected Chunks: 38
+Total Chunks Found: 0
+Overall Accuracy: 0.00%

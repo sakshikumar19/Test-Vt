@@ -1,0 +1,43 @@
+DETAILED QUERY LOG - 2025-03-15 00:49:24
+======================================================================
+
+QUESTION: Why don’t auto-increment columns work well in sharded Vitess?
+
+ANSWER: ### Auto-Increment Columns in Sharded Vitess
+Auto-increment columns do not work well in sharded Vitess because they are not designed to handle the distributed nature of a sharded database. 
+
+In a sharded database, each shard has its own set of auto-incrementing values, which can lead to conflicts and inconsistencies when trying to merge or compare data across shards. 
+
+To solve this problem, Vitess provides an alternative solution called **Vitess sequences**, which can be used to generate unique identifiers for rows in a sharded table. Sequence tables must be specified in the VSchema and tied to table columns, allowing VTGate to generate a unique number for the column at the time of insert.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9997385144233704
+  - Response Time: 17865.63 ms
+  - Retrieval Time (est.): 12505.94 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9997385144233704
+  Content:
+----------------------------------------
+within any individual transaction. Enabling two-phase commit in Vitess to support cross-shard writes is possible, but will come at a significant performance cost. Whether that tradeoff is worth it differs from application to application and, generally speaking, adjusting the schema/workload is considered the better approach. --- title: Overview weight: 1 --- ## Why do auto-increment columns not work in sharded Vitess? Auto-increment columns do not work very well for sharded tables. Vitess sequences solve this problem. Sequence tables must be specified in the VSchema and then tied to table columns. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table. Vitess also supports sequence generators that can be used to generate new ids that work like MySQL auto increment columns. The VSchema allows you to associate table columns to sequence tables. ## What is resharding? How does it work? Vitess supports resharding, in which the number of shards is changed on a live cluster. This can be either splitting one or more shards into smaller pieces, or merging neighboring shards into bigger pieces. During resharding, the data in the source shards is copied into the destination shards, allowed to catch up on replication, and then compared against the original to ensure data integrity. Then the live serving infrastructure is shifted to the destination shards, and the source shards are deleted. ## How are shards named? Shard names have the following characteristics: - They represent a range, where the left number is included, but the right is not. - Their notation is hexadecimal. - They are left justified. - A - prefix means: anything less than the RHS value. - A - postfix means: anything greater than or equal to the LHS value. - A plain 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9986074566841125
+  Content:
+----------------------------------------
+Primary Vindex is unique: given an input value, it produces a single keyspace ID, or value in the keyspace used to shard the table. The Primary Vindex is typically a functional Vindex: Vitess computes the keyspace ID as needed from a column in the sharded table. ## Sequences Auto-increment columns do not work very well for sharded tables. [Vitess sequences](../vitess-sequences) solve this problem. Sequence tables must be specified in the VSchema, and then tied to table columns. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table. ## Reference tables Vitess allows you to create an unsharded table and deploy it into all shards of a sharded keyspace. The data in such a table is assumed to be identical for all shards. In this case, you can specify that the table is of type `reference`, and should not specify any vindex for it. Any joins of this table with an unsharded table will be treated as a local join. Typically, such a table has a canonical source in an unsharded keyspace, and the copies in the sharded keyspace are kept up-to-date through VReplication. ## Per-Keyspace VSchema The VSchema uses a flexible proto JSON format. Essentially, you can use `snake_case` or `camelCase` for the keys. The configuration of your VSchema reflects the desired sharding configuration for your database, including whether or not your tables are sharded and whether you want to implement a secondary Vindex. ### Commands You can use the following commands for maintaining the VSchema: * `GetVSchema <keyspace>` * `ApplyVSchema -- {--vschema=<vschema> || --vschema_file=<vschema file> || --sql=<sql> || --sql_file=<sql file>} [--cells=c1,c2,...] [--skip_rebuild] [--dry-run] [--strict] <keyspace>` * `RebuildVSchemaGraph [--cells=c1,c2,...]` * `GetSrvVSchema <cell>` * `DeleteSrvVSchema <cell>` In order to verify that a VTGate has loaded SrvVSchema 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9984859824180603
+  Content:
+----------------------------------------
+to plan out a reshard operation diligently. However, you can always _reshard again_ later if your sharding scheme turns out to be suboptimal. Using our example `commerce` and `customer` keyspaces, lets work through the two most common issues. ### Sequences The first issue to address is the fact that customer and corder have auto-increment columns. This scheme does not work well in a sharded setup. Instead, Vitess provides an equivalent feature called [sequences](../../../reference/features/vitess-sequences/). The sequence table is an unsharded single row table that Vitess can use to generate monotonically increasing IDs. The syntax to generate IDs is: `select next value from customer_seq` or `select next N values from customer_seq`. The `vttablet` that exposes this table is capable of serving a very large number of such IDs because values are reserved in chunks, then cached and served from memory. The chunk/cache size is configurable via the [`cache` value](../../../reference/features/vitess-sequences/#initializing-a-sequence). The VSchema allows you to associate the column of a table with the sequence table. Once this is done, an `INSERT` on that table transparently fetches an ID from the sequence table, fills in the value in the new row, and then routes the row to the appropriate shard. This makes the construct backward compatible to how [MySQL's `auto_increment`](https://dev.mysql.com/doc/refman/en/example-auto-increment.html) works. Since sequences table must be unsharded, they will be stored in the unsharded `commerce` keyspace. Here is the schema used: ```sql CREATE TABLE customer_seq (id int, next_id bigint, cache bigint, primary key(id)) comment 'vitess_sequence'; INSERT INTO customer_seq (id, next_id, cache) VALUES (0, 1000, 100); CREATE TABLE order_seq (id int, next_id bigint, cache bigint, primary key(id)) comment 'vitess_sequence'; INSERT INTO order_seq (id, next_id, cache) VALUES (0, 1000, 100); ``` </br> Note the `vitess_sequence` comment in the create table statement. VTTablet will use this metadata to treat this table as a sequence. About the values 
+----------------------------------------
+

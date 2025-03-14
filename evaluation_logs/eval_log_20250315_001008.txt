@@ -1,0 +1,444 @@
+=== VITESS FAQ CHATBOT EVALUATION LOG ===
+Started: 2025-03-15 00:10:08
+==================================================
+
+QUERY: 2025-03-15 00:10:57
+Question: What versions of MySQL or MariaDB are compatible with Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9987503290176392
+Response Time: 26835.69 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:11:16
+Question: What does it mean for Vitess to be MySQL compatible?
+Docs Retrieved: 3
+Top Doc Score: 0.9320148229598999
+Response Time: 19419.65 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:11:33
+Question: How is Vitess different from MySQL?
+Docs Retrieved: 3
+Top Doc Score: 0.997612714767456
+Response Time: 16752.9 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:11:44
+Question: Are foreign keys supported in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9988915324211121
+Response Time: 11280.98 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:12:04
+Question: What is VTGate and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9995189905166626
+Response Time: 19737.89 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:12:24
+Question: What is a keyspace in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.992355227470398
+Response Time: 20615.32 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:12:44
+Question: How can I monitor or get metrics from Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.993794322013855
+Response Time: 19272.87 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:13:04
+Question: What is VReplication and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9979208111763
+Response Time: 20402.68 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:13:24
+Question: What is a VSchema and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9665707945823669
+Response Time: 20149.33 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:13:41
+Question: What is a primary Vindex and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9995032548904419
+Response Time: 17136.81 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:13:59
+Question: How do Vitess replicas stay in sync?
+Docs Retrieved: 3
+Top Doc Score: 0.9826949238777161
+Response Time: 17942.11 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:14:17
+Question: What is the topology service in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9997178912162781
+Response Time: 17533.92 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:14:39
+Question: How do I migrate out of Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9850391149520874
+Response Time: 21772.0 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:15:00
+Question: What are the main components of Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9850019812583923
+Response Time: 20978.08 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:15:18
+Question: How do I debug elevated query latency on a Vitess primary?
+Docs Retrieved: 3
+Top Doc Score: 0.9993916749954224
+Response Time: 18353.56 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:15:33
+Question: What should I do if my Vitess primary starts up in read-only mode?
+Docs Retrieved: 3
+Top Doc Score: 0.9986967444419861
+Response Time: 15488.15 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:15:51
+Question: How do I configure Vitess to use etcd as the topology service?
+Docs Retrieved: 3
+Top Doc Score: 0.9942371845245361
+Response Time: 17454.38 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:16:11
+Question: How do I create a VSchema for a sharded keyspace?
+Docs Retrieved: 3
+Top Doc Score: 0.9979829788208008
+Response Time: 20228.4 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:16:33
+Question: How do I monitor long-running queries in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9215589165687561
+Response Time: 22082.67 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:16:52
+Question: How do I perform a resharding operation in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9890552759170532
+Response Time: 18476.24 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:17:08
+Question: How do I integrate Prometheus with Vitess for monitoring?
+Docs Retrieved: 3
+Top Doc Score: 0.9869576692581177
+Response Time: 16078.33 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:17:29
+Question: How do I handle failovers in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.8875935673713684
+Response Time: 21286.65 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:17:49
+Question: How do I configure semi-synchronous replication in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9963808655738831
+Response Time: 20229.29 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:18:12
+Question: How do I troubleshoot a VReplication stream that is not progressing?
+Docs Retrieved: 3
+Top Doc Score: 0.5968689918518066
+Response Time: 23108.7 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:37:20
+Question: How can I debug elevated query latency on a Vitess primary?
+Docs Retrieved: 3
+Top Doc Score: 0.9992483258247375
+Response Time: 15101.78 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:37:39
+Question: What should I do if my Vitess primary starts up in read-only mode?
+Docs Retrieved: 3
+Top Doc Score: 0.9986967444419861
+Response Time: 19795.0 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:37:56
+Question: How do I inform Vitess of a new primary tablet after a manual failover?
+Docs Retrieved: 3
+Top Doc Score: 0.9980881810188293
+Response Time: 17059.13 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:38:11
+Question: Where can I find troubleshooting resources in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.7865126132965088
+Response Time: 14219.15 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:38:31
+Question: How do I check the version of my Vitess build?
+Docs Retrieved: 3
+Top Doc Score: 0.9810736179351807
+Response Time: 20513.78 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:39:34
+Question: What is VTGate and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9995189905166626
+Response Time: 22557.68 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:48:44
+Question: How can I determine which shard contains a specific row in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9917450547218323
+Response Time: 23285.92 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:49:06
+Question: Can I perform cross-shard JOINs or transactions in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9993329644203186
+Response Time: 21677.14 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:49:24
+Question: Why don’t auto-increment columns work well in sharded Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9997385144233704
+Response Time: 17865.63 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:49:47
+Question: What is resharding, and how does it work in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9937494993209839
+Response Time: 23147.78 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:50:07
+Question: How are shards named in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9907467365264893
+Response Time: 20086.66 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:50:23
+Question: What does '0' or '-' mean in shard naming?
+Docs Retrieved: 3
+Top Doc Score: 0.9903362989425659
+Response Time: 16667.88 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:50:36
+Question: How can I use MoveTables with duplicate table names?
+Docs Retrieved: 3
+Top Doc Score: 0.9981676340103149
+Response Time: 12390.98 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:50:48
+Question: What happens if I don’t handle duplicate table names before using MoveTables?
+Docs Retrieved: 3
+Top Doc Score: 0.9956215023994446
+Response Time: 12337.73 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:51:00
+Question: How does Vitess handle sequence generation for sharded tables?
+Docs Retrieved: 3
+Top Doc Score: 0.983989417552948
+Response Time: 11627.07 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:51:13
+Question: What is the difference between shard '0' and shard '-' in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9389210343360901
+Response Time: 12940.32 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:51:26
+Question: How does Vitess ensure data integrity during resharding?
+Docs Retrieved: 3
+Top Doc Score: 0.9935630559921265
+Response Time: 13103.18 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:51:37
+Question: What are the performance implications of cross-shard transactions in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.7974145412445068
+Response Time: 11067.33 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:51:50
+Question: How do I manually target a specific shard in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9920274615287781
+Response Time: 12946.37 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:52:01
+Question: What is the purpose of sequence tables in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9741520881652832
+Response Time: 11430.95 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:52:13
+Question: How do I apply routing rules in Vitess to handle duplicate table names?
+Docs Retrieved: 3
+Top Doc Score: 0.9929177761077881
+Response Time: 11614.64 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:52:25
+Question: What is the significance of the '-' prefix and postfix in shard names?
+Docs Retrieved: 3
+Top Doc Score: 0.972111165523529
+Response Time: 12065.45 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:52:38
+Question: Can I merge shards in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9382314085960388
+Response Time: 12566.0 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:52:49
+Question: What is the difference between shard '80-' and '80-FF' in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.9983144998550415
+Response Time: 11583.81 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 00:53:02
+Question: How does Vitess handle replication during resharding?
+Docs Retrieved: 3
+Top Doc Score: 0.9747881889343262
+Response Time: 12955.29 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 01:33:58
+Question: What is VTGate and how does it work?
+Docs Retrieved: 3
+Top Doc Score: 0.9995189905166626
+Response Time: 16860.89 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 02:18:20
+Question: How can I debug elevated query latency on a Vitess primary?
+Docs Retrieved: 3
+Top Doc Score: 0.9992483258247375
+Response Time: 17397.95 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 02:18:46
+Question: What should I do if my Vitess primary starts up in read-only mode?
+Docs Retrieved: 3
+Top Doc Score: 0.9986967444419861
+Response Time: 25564.74 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 02:19:09
+Question: How do I inform Vitess of a new primary tablet after a manual failover?
+Docs Retrieved: 3
+Top Doc Score: 0.9980881810188293
+Response Time: 23046.51 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 02:19:28
+Question: Where can I find troubleshooting resources in Vitess?
+Docs Retrieved: 3
+Top Doc Score: 0.7865126132965088
+Response Time: 19235.64 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 02:19:49
+Question: How do I check the version of my Vitess build?
+Docs Retrieved: 3
+Top Doc Score: 0.9810736179351807
+Response Time: 21299.59 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+

@@ -1,0 +1,49 @@
+DETAILED QUERY LOG - 2025-03-15 00:52:01
+======================================================================
+
+QUESTION: What is the purpose of sequence tables in Vitess?
+
+ANSWER: ### Purpose of Sequence Tables in Vitess
+The purpose of sequence tables in Vitess is to **emulate the behavior of MySQL's auto-increment columns** in a sharded environment. 
+
+According to the context, a Vitess sequence is a single row unsharded tablet that keeps track of ids issued so far, allowing you to generate unique identifiers for your data. 
+
+Sequence tables are used to provide a way to generate auto-incrementing IDs in a sharded database, where the traditional MySQL auto-increment column is not available. 
+
+By using a sequence table, you can generate unique IDs for your data, even in a sharded environment, and ensure that your application can scale horizontally while maintaining data consistency. 
+
+In Vitess, sequence tables are created in an unsharded keyspace and are configured using a special comment `vitess_sequence` and a specific table structure. 
+
+Once set up, you can use the `select next` syntax to generate values from the sequence, allowing you to easily integrate auto-incrementing IDs into your application.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9741520881652832
+  - Response Time: 11430.95 ms
+  - Retrieval Time (est.): 8001.67 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9741520881652832
+  Content:
+----------------------------------------
+you get familiar with the JSON syntax as it will be useful for troubleshooting if something does not work as intended. --- title: Pictorial Summary weight: 25 --- The following two diagrams highlight some of the relationships that exist between VSchema elements and the MySQL tables. ### product and customer ![vschema1](../img/vschema1.png) ### corder ![vschema2](../img/vschema2.png) --- title: Sequences weight: 6 --- The sharded `customer` table we created did not have an auto-increment column. The Vitess Sequence feature can be used to emulate the same behavior as MySQL’s auto-increment. A Vitess sequence is a single row unsharded tablet that keeps track of ids issued so far. Additionally, a configurable number of values can be cached by vttablet to minimize round trips into MySQL. We will create the sequence table in the unsharded `product` keyspace as follows: ```sql create table customer_seq(id bigint, next_id bigint, cache bigint, primary key(id)) comment 'vitess_sequence'; insert into customer_seq(id, next_id, cache) values(0, 1, 3); ``` Note the special comment `vitess_sequence`. This instructs vttablet that this is a special table. The table needs to be pre-populated with a single row where: * `id` must always be 0 * `next_id` should be set to the next (starting) value of the sequence * `cache` is the number of values to cache before updating the table for the next value. This value should be set to a fairly large number like 1000. We have set the value to `3` mainly to demonstrate how the feature works. Since this is a special table, we have to inform the vschema by giving it a `sequence` type. ``` "customer_seq": { "type": "sequence" } ``` Once setup this way, you can use the special `select next` syntax to generate values from this sequence: ```text mysql> select next 2 values from customer_seq; +---------+ | nextval | +---------+ | 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9719083309173584
+  Content:
+----------------------------------------
+is reserved when the statement is issued, not when the transaction is committed). * When inserting a row in a table with an `auto_increment` column, if the value for the `auto_increment` column is generated (not explicitly specified in the statement), the value for the column is returned to the client alongside the statement result (which can be queried with [`LAST_INSERT_ID()`](https://dev.mysql.com/doc/refman/en/information-functions.html#function_last-insert-id)). ## Vitess Sequences Each sequence has a backing MySQL table — which **must** be in an unsharded keyspace — and uses a single row in that table to describe which values the sequence should have next. To improve performance we also support block allocation of IDs: each update to the MySQL table is only done every N IDs (N being configurable) and in between those writes only the in-memory structures within the primary vttablet serving the unsharded keyspace where the backing table lives are updated, making the QPS only limited by the RPC latency between the vtgates and the the serving vttablet for the sequence table. So the sequence table is an unsharded single row table that Vitess can use to generate monotonically increasing ids. The VSchema then allows you to associate a column in your table with the sequence. Once they are associated, an `insert` on that table will transparently fetch an ID from the sequence, fill in the value, and route the row to the appropriate shard. ### Creating a Sequence To create a sequence, a backing table must first be created. The table structure must have the following columns and SQL comment in order to provide sequences (in the examples here the sequence is for a user table): ``` sql create table user_seq(id bigint, next_id bigint, cache bigint, primary key(id)) comment 'vitess_sequence'; ``` <p> {{< info >}} Note: the vttablet in-memory structure uses `int64` types so `bigint 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9168077707290649
+  Content:
+----------------------------------------
+by case examples are available in the documentation starting [here](https://vitess.io/docs/user-guides/sql/vtexplain-in-bulk/). vtexplain can also be used to try different sharding scenarios before deciding on one. --- title: Query Rewriting weight: 3 --- ## How can tables be migrated from using auto-increment to sequences? Auto-increment columns do not ensure uniqueness for sharded tables. Instead you will need to use Vitess sequences to achieve the same functionality. Sequences are based on a MySQL table and use a single value in that table to describe which values the sequence should have next. Thus, the sequence table is an unsharded single row table that Vitess can use to generate monotonically increasing ids. Sequence tables must be specified in the VSchema, and then tied to table columns. Once they are associated, an insert on that table will transparently fetch an id from the sequence table, fill in the value, and route the row to the appropriate shard. At the time of insert, if no value is specified for such a column, VTGate will generate a number for it using the sequence table. To create a sequence you will need to follow the steps [here](https://vitess.io/docs/reference/features/vitess-sequences/#creating-a-sequence). ## Is there a list of supported and unsupported queries? Please see "SQL Syntax" under [MySQL Compatibility](https://vitess.io/docs/reference/compatibility/mysql-compatibility/). ## What special functions can Vitess handle? We list out the special functions that Vitess handles without delegating to MySQL [here](https://vitess.io/docs/concepts/query-rewriting/#special-functions). There's a workaround if you want to use a JPA like Hibernate/Eclipselink to talk to Vitess. Rather than using `GenerationType.IDENTITY` you can use Eclipselink QuerySequence to define a query directly to Vitess Sequences tables. This not only prevents `SELECT LAST_INSERT_ID()` calls but also can reduce the number of database trips since the application could request a bunch of IDs from Vitess. Potentially around 1000, so this setup will make only one call per 1000 
+----------------------------------------
+

@@ -6,7 +6,7 @@ import json
 import yaml
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from chatbot import VitessFAQChatbot, initialize_llm, initialize_inference_llm
+from chatbot2 import VitessFAQChatbot, initialize_llm, initialize_inference_llm
 import pandas as pd
 import asyncio
 
@@ -24,7 +24,7 @@ class ChatbotEvaluator:
         os.makedirs(self.log_path, exist_ok=True)
         os.makedirs(self.detailed_logs_dir, exist_ok=True)
         
-        with open(self.text_log_file, 'w') as file:
+        with open(self.text_log_file, 'w',encoding="utf-8") as file:
             file.write("=== VITESS FAQ CHATBOT EVALUATION LOG ===\n")
             file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             file.write("=" * 50 + "\n\n")
@@ -51,7 +51,7 @@ class ChatbotEvaluator:
         sources = [doc.meta.get("source", "Unknown") for doc in retrieved_docs]
         
         # Log to the main text log file
-        with open(self.text_log_file, 'a') as file:
+        with open(self.text_log_file, 'a', encoding="utf-8") as file:
             file.write(f"QUERY: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             file.write(f"Question: {question}\n")
             file.write(f"Docs Retrieved: {num_docs}\n")
@@ -66,7 +66,7 @@ class ChatbotEvaluator:
             f"query_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         )
         
-        with open(detailed_log_file, 'w') as file:
+        with open(detailed_log_file, 'w', encoding="utf-8") as file:
             file.write(f"DETAILED QUERY LOG - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             file.write("=" * 70 + "\n\n")
             file.write(f"QUESTION: {question}\n\n")
@@ -84,15 +84,20 @@ class ChatbotEvaluator:
                 file.write(f"  Score: {doc.score if hasattr(doc, 'score') else 'N/A'}\n")
                 file.write(f"  Content:\n{'-' * 40}\n{doc.content}\n{'-' * 40}\n\n")
         
+        # Return a deep copy of the result to avoid any reference issues
+        # This is important when working with file resources
         return {
-            "result": result,
+            "result": {
+                "answer": result.get("answer", ""),
+                "documents": retrieved_docs
+            },
             "evaluation": {
                 "response_time_ms": round(total_time_ms, 2),
                 "num_docs_retrieved": num_docs,
                 "top_doc_score": top_doc_score
             }
         }
-
+    
     def batch_evaluate(self, test_questions: List[str]) -> pd.DataFrame:
         """Run evaluation on a batch of test questions"""
         results = []
@@ -103,7 +108,7 @@ class ChatbotEvaluator:
             f"batch_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         )
         
-        with open(batch_log_file, 'w') as file:
+        with open(batch_log_file, 'w',encoding="utf-8") as file:
             file.write("=== BATCH EVALUATION RESULTS ===\n")
             file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             file.write(f"Questions: {len(test_questions)}\n")
@@ -119,19 +124,19 @@ class ChatbotEvaluator:
                 "top_score": eval_result["evaluation"]["top_doc_score"],
                 "response_time_ms": eval_result["evaluation"]["response_time_ms"]
             }
-            results.append(result_dict)
-            
+                        
             # Append to the batch log
-            with open(batch_log_file, 'a') as file:
+            with open(batch_log_file, 'a',encoding="utf-8") as file:
                 file.write(f"QUESTION {i+1}: {question}\n")
                 file.write(f"Answer: {eval_result['result']['answer'][:100]}...\n")
                 file.write(f"Docs Retrieved: {eval_result['evaluation']['num_docs_retrieved']}\n")
                 file.write(f"Top Score: {eval_result['evaluation']['top_doc_score']}\n")
                 file.write(f"Response Time: {eval_result['evaluation']['response_time_ms']} ms\n")
+                file.write(f"LLM Judge: {result_dict.get('llm_judge', 'Not evaluated')}\n")
                 file.write("-" * 50 + "\n\n")
         
         # Write summary at the end
-        with open(batch_log_file, 'a') as file:
+        with open(batch_log_file, 'a',encoding="utf-8") as file:
             file.write("=== SUMMARY STATISTICS ===\n")
             avg_docs = sum(r["num_docs"] for r in results) / len(results)
             avg_score = sum(r["top_score"] for r in results if r["top_score"] is not None) / len(results)
@@ -149,8 +154,11 @@ class ChatbotEvaluator:
         results = []
         
         # Load YAML file
-        with open(yaml_path, 'r') as file:
-            yaml_data = yaml.safe_load(file)
+        try:
+            with open(yaml_path, 'r', encoding="utf-8") as file:
+                yaml_data = yaml.safe_load(file)
+        except Exception as e:
+            return pd.DataFrame(), {"error": str(e)}, []
         
         test_cases = yaml_data.get('test_cases', [])
         total_chunks_found = 0
@@ -162,94 +170,110 @@ class ChatbotEvaluator:
             f"ground_truth_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         )
         
-        with open(ground_truth_log_file, 'w') as file:
-            file.write("=== GROUND TRUTH EVALUATION RESULTS ===\n")
-            file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            file.write(f"Test Cases: {len(test_cases)}\n")
-            file.write("=" * 50 + "\n\n")
-        
-        for i, test_case in enumerate(test_cases):
-            question = test_case.get('question', '')
-            expected_chunks = test_case.get('expected_chunks', [])
+        # Open log file once for the entire function
+        with open(ground_truth_log_file, 'w', encoding="utf-8") as log_file:
+            log_file.write("=== GROUND TRUTH EVALUATION RESULTS ===\n")
+            log_file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            log_file.write(f"Test Cases: {len(test_cases)}\n")
+            log_file.write("=" * 50 + "\n\n")
             
-            # Skip if no question or expected chunks
-            if not question or not expected_chunks:
-                continue
-            
-            # Evaluate query
-            eval_result = self.evaluate_query(question)
-            retrieved_docs = eval_result["result"]["documents"]
-            retrieved_chunks = [doc.content for doc in retrieved_docs]
-            retrieved_chunks_text = "\n".join(retrieved_chunks)
-            
-            # Check for expected chunks in retrieved docs
-            chunks_found = 0
-            found_chunks = []
-            missing_chunks = []
-            
-            for expected_chunk in expected_chunks:
-                # Check if expected chunk is a substring of any retrieved chunk
-                chunk_found = False
-                for retrieved_chunk in retrieved_chunks:
-                    if expected_chunk in retrieved_chunk:
-                        chunk_found = True
-                        found_chunks.append(expected_chunk)
-                        break
+            for i, test_case in enumerate(test_cases):
+                question = test_case.get('question', '')
+                expected_chunks = test_case.get('expected_chunks', [])
                 
-                if not chunk_found:
-                    missing_chunks.append(expected_chunk)
-                else:
-                    chunks_found += 1
+                # Skip if no question or expected chunks
+                if not question or not expected_chunks:
+                    continue
+                
+                # Evaluate query
+                try:
+                    eval_result = self.evaluate_query(question)
+                    retrieved_docs = eval_result["result"]["documents"]
+                    retrieved_chunks = [doc.content for doc in retrieved_docs]
+                    retrieved_chunks_text = "\n".join(retrieved_chunks)
+                    
+                    # Check for expected chunks in retrieved docs
+                    chunks_found = 0
+                    found_chunks = []
+                    missing_chunks = []
+                    
+                    for expected_chunk in expected_chunks:
+                        # Check if expected chunk is a substring of any retrieved chunk
+                        chunk_found = False
+                        for retrieved_chunk in retrieved_chunks:
+                            if expected_chunk in retrieved_chunk:
+                                chunk_found = True
+                                found_chunks.append(expected_chunk)
+                                break
+                        
+                        if not chunk_found:
+                            missing_chunks.append(expected_chunk)
+                        else:
+                            chunks_found += 1
+                    
+                    # Calculate accuracy for this question
+                    total_expected = len(expected_chunks)
+                    accuracy = (chunks_found / total_expected * 100) if total_expected > 0 else 0
+                    
+                    # Update totals for overall accuracy
+                    total_ground_truth_chunks += total_expected
+                    total_chunks_found += chunks_found
+                    
+                    # Build result dictionary
+                    result_dict = {
+                        "question": question,
+                        "expected_chunks": expected_chunks,
+                        "retrieved_chunks": retrieved_chunks,
+                        "answer": eval_result["result"]["answer"],
+                        "chunks_found": chunks_found,
+                        "total_expected": total_expected,
+                        "accuracy": accuracy,
+                        "found_chunks": found_chunks,
+                        "missing_chunks": missing_chunks,
+                        "num_docs": eval_result["evaluation"]["num_docs_retrieved"],
+                        "top_score": eval_result["evaluation"]["top_doc_score"],
+                        "response_time_ms": eval_result["evaluation"]["response_time_ms"]
+                    }
+                    
+                    # LLM Judge evaluation
+                    try:
+                        llm_judge = initialize_inference_llm()
+                        prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {eval_result["result"]["answer"]} Your Response:[/INST]</s>"""
+                        judge_response = llm_judge(prompt)
+                        result_dict["llm_judge"] = judge_response.strip()
+                    except Exception as e:
+                        result_dict["llm_judge"] = f"Error: {str(e)}"
+                    
+                    results.append(result_dict)
+                    
+                    # Log the result
+                    log_file.write(f"TEST CASE {i+1}: {question}\n")
+                    log_file.write(f"Expected Chunks: {len(expected_chunks)}\n")
+                    for j, chunk in enumerate(expected_chunks):
+                        log_file.write(f"  {j+1}. {chunk}\n")
+                    log_file.write(f"Retrieved Chunks: {len(retrieved_chunks)}\n")
+                    for j, chunk in enumerate(retrieved_chunks):
+                        log_file.write(f"  {j+1}. {chunk[:100]}...\n")
+                    log_file.write(f"Chunks Found: {chunks_found}/{total_expected}\n")
+                    log_file.write(f"Accuracy: {accuracy:.2f}%\n")
+                    log_file.write(f"Missing Chunks: {missing_chunks}\n")
+                    log_file.write(f"Answer: {eval_result['result']['answer'][:200]}...\n")
+                    log_file.write(f"LLM Judge: {result_dict.get('llm_judge', 'Not evaluated')}\n")
+                    log_file.write("-" * 50 + "\n\n")
+                except Exception as e:
+                    log_file.write(f"ERROR processing test case {i+1}: {str(e)}\n")
+                    log_file.write("-" * 50 + "\n\n")
+                    continue
             
-            # Calculate accuracy for this question
-            total_expected = len(expected_chunks)
-            accuracy = (chunks_found / total_expected * 100) if total_expected > 0 else 0
+            # Calculate overall accuracy
+            overall_accuracy = (total_chunks_found / total_ground_truth_chunks * 100) if total_ground_truth_chunks > 0 else 0
             
-            # Update totals for overall accuracy
-            total_ground_truth_chunks += total_expected
-            total_chunks_found += chunks_found
-            
-            # Build result dictionary
-            result_dict = {
-                "question": question,
-                "expected_chunks": expected_chunks,
-                "retrieved_chunks": retrieved_chunks,
-                "answer": eval_result["result"]["answer"],
-                "chunks_found": chunks_found,
-                "total_expected": total_expected,
-                "accuracy": accuracy,
-                "found_chunks": found_chunks,
-                "missing_chunks": missing_chunks,
-                "num_docs": eval_result["evaluation"]["num_docs_retrieved"],
-                "top_score": eval_result["evaluation"]["top_doc_score"],
-                "response_time_ms": eval_result["evaluation"]["response_time_ms"]
-            }
-            results.append(result_dict)
-            
-            # Log the result
-            with open(ground_truth_log_file, 'a') as file:
-                file.write(f"TEST CASE {i+1}: {question}\n")
-                file.write(f"Expected Chunks: {len(expected_chunks)}\n")
-                for j, chunk in enumerate(expected_chunks):
-                    file.write(f"  {j+1}. {chunk}\n")
-                file.write(f"Retrieved Chunks: {len(retrieved_chunks)}\n")
-                for j, chunk in enumerate(retrieved_chunks):
-                    file.write(f"  {j+1}. {chunk[:100]}...\n")
-                file.write(f"Chunks Found: {chunks_found}/{total_expected}\n")
-                file.write(f"Accuracy: {accuracy:.2f}%\n")
-                file.write(f"Missing Chunks: {missing_chunks}\n")
-                file.write("-" * 50 + "\n\n")
-        
-        # Calculate overall accuracy
-        overall_accuracy = (total_chunks_found / total_ground_truth_chunks * 100) if total_ground_truth_chunks > 0 else 0
-        
-        # Log summary
-        with open(ground_truth_log_file, 'a') as file:
-            file.write("=== SUMMARY STATISTICS ===\n")
-            file.write(f"Total Test Cases: {len(test_cases)}\n")
-            file.write(f"Total Expected Chunks: {total_ground_truth_chunks}\n")
-            file.write(f"Total Chunks Found: {total_chunks_found}\n")
-            file.write(f"Overall Accuracy: {overall_accuracy:.2f}%\n")
+            # Log summary
+            log_file.write("=== SUMMARY STATISTICS ===\n")
+            log_file.write(f"Total Test Cases: {len(test_cases)}\n")
+            log_file.write(f"Total Expected Chunks: {total_ground_truth_chunks}\n")
+            log_file.write(f"Total Chunks Found: {total_chunks_found}\n")
+            log_file.write(f"Overall Accuracy: {overall_accuracy:.2f}%\n")
         
         # Create summary
         summary = {
@@ -259,16 +283,29 @@ class ChatbotEvaluator:
             "overall_accuracy": overall_accuracy
         }
         
+        # Add LLM judge evaluation
+        try:
+            llm_judge = initialize_inference_llm()
+            prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {eval_result["result"]["answer"]} Your Response:[/INST]</s>"""
+            judge_response = llm_judge(prompt)
+            result_dict["llm_judge"] = judge_response.strip()
+        except Exception as e:
+            result_dict["llm_judge"] = f"Error: {str(e)}"
+        
+        results.append(result_dict)
+        
         # Prepare simplified DataFrame for display and CSV export
         display_results = []
         for result in results:
             display_result = {
                 "question": result["question"],
+                "answer": result["answer"],  # Added answer to display results
                 "expected_chunks": "\n".join(result["expected_chunks"]),
                 "retrieved_chunks": "\n".join(result["retrieved_chunks"]),
                 "accuracy": f"{result['accuracy']:.2f}%",
                 "found_chunks": result["chunks_found"],
-                "total_expected": result["total_expected"]
+                "total_expected": result["total_expected"],
+                "llm_judge": result.get("llm_judge", "Not evaluated")  # Added LLM judge evaluation
             }
             display_results.append(display_result)
         
@@ -309,6 +346,10 @@ def run_streamlit_eval():
                 index=0
             )
         
+        # Add chunk size and overlap parameters to sidebar
+        chunk_size = st.slider("Chunk Size", min_value=100, max_value=1000, value=300, step=50)
+        chunk_overlap = st.slider("Chunk Overlap", min_value=0, max_value=200, value=50, step=10)
+        
         # Retrieval settings
         top_k = st.slider("Top K Documents", min_value=1, max_value=10, value=3)
         
@@ -335,8 +376,8 @@ def run_streamlit_eval():
                 chatbot = VitessFAQChatbot(
                     embedding_model=embedding_model,
                     llm_model=llm,
-                    chunk_size=300,
-                    chunk_overlap=50,
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
                     top_k=top_k,
                 )
                 
@@ -375,11 +416,21 @@ def run_streamlit_eval():
                 eval_result = evaluator.evaluate_query(question)
                 result = eval_result["result"]
                 
+                # Run LLM Judge
+                try:
+                    llm_judge = initialize_inference_llm()
+                    prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {result["answer"]} Your Response:[/INST]</s>"""
+                    judge_response = llm_judge(prompt)
+                    llm_judgment = judge_response.strip()
+                except Exception as e:
+                    llm_judgment = f"Error: {str(e)}"
+                
                 # Show evaluation metrics
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 col1.metric("Documents Retrieved", eval_result["evaluation"]["num_docs_retrieved"])
                 col2.metric("Top Document Score", round(eval_result["evaluation"]["top_doc_score"], 3) if eval_result["evaluation"]["top_doc_score"] else "N/A")
                 col3.metric("Response Time", f"{eval_result['evaluation']['response_time_ms']:.0f} ms")
+                col4.metric("LLM Judge", llm_judgment)
                 
                 # Show answer
                 st.subheader("Answer")
@@ -396,7 +447,7 @@ def run_streamlit_eval():
                     source = doc.meta.get("source", "Unknown")
                     
                     with st.expander(f"Document {i+1}: {source} (Score: {score})"):
-                        st.text_area(f"Content {i+1}", doc.content, height=200)
+                        st.text_area(f"Content Doc {i+1}", doc.content, height=200, key=f"single_query_doc_{i}")
                 
                 # Add to session history
                 st.session_state.eval_results.append({
@@ -404,7 +455,8 @@ def run_streamlit_eval():
                     "answer": result["answer"],
                     "num_docs": eval_result["evaluation"]["num_docs_retrieved"],
                     "top_score": eval_result["evaluation"]["top_doc_score"],
-                    "response_time_ms": eval_result["evaluation"]["response_time_ms"]
+                    "response_time_ms": eval_result["evaluation"]["response_time_ms"],
+                    "llm_judge": llm_judgment
                 })
     
     # Batch Evaluation Tab
@@ -428,10 +480,11 @@ def run_streamlit_eval():
                 
                 # Summary metrics
                 st.subheader("Summary Metrics")
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 col1.metric("Avg. Documents Retrieved", f"{results_df['num_docs'].mean():.2f}")
                 col2.metric("Avg. Top Score", f"{results_df['top_score'].mean():.3f}")
                 col3.metric("Avg. Response Time", f"{results_df['response_time_ms'].mean():.0f} ms")
+                col4.metric("LLM Judge Yes", f"{results_df['llm_judge'].str.contains('Yes').sum()}/{len(results_df)}")
                 
                 # Download results
                 csv_data = results_df.to_csv(index=False)
@@ -501,10 +554,16 @@ test_cases:
             # Display overall metrics
             st.subheader("Overall Evaluation Metrics")
             
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             col1.metric("Test Cases", summary["total_test_cases"])
             col2.metric("Chunks Found", f"{summary['total_chunks_found']}/{summary['total_expected_chunks']}")
             col3.metric("Overall Accuracy", f"{summary['overall_accuracy']:.2f}%")
+            
+            # Count LLM judgments
+            if "ground_truth_display" in st.session_state and "llm_judge" in st.session_state.ground_truth_display:
+                judge_count = st.session_state.ground_truth_display["llm_judge"].str.contains("Yes").sum()
+                total = len(st.session_state.ground_truth_display)
+                col4.metric("LLM Judge Yes", f"{judge_count}/{total}")
             
             # Display detailed results
             st.subheader("Detailed Results")
@@ -525,22 +584,26 @@ test_cases:
             
             for result in st.session_state.ground_truth_results:
                 accuracy_text = f"{result['accuracy']:.2f}% ({result['chunks_found']}/{result['total_expected']} chunks)"
-                with st.expander(f"Q: {result['question']} - Accuracy: {accuracy_text}"):
+                llm_judgment = result.get("llm_judge", "Not evaluated")
+                with st.expander(f"Q: {result['question']} - Accuracy: {accuracy_text} - LLM: {llm_judgment}"):
+                    st.markdown("#### Generated Answer")
+                    st.write(result['answer'])
+                    
                     st.markdown("#### Ground Truth Chunks")
                     for i, chunk in enumerate(result['expected_chunks']):
                         found = chunk in result['found_chunks']
-                        status = "✅" if found else "❌"
+                        status = "[FOUND]" if found else "[MISSING]"
                         st.markdown(f"{status} {chunk}")
                     
                     st.markdown("#### Retrieved Chunks")
                     for i, chunk in enumerate(result['retrieved_chunks']):
-                        st.text_area(f"Chunk {i+1}", chunk, height=100)
-                    
-                    st.markdown("#### Generated Answer")
-                    st.write(result['answer'])
+                        st.text_area(
+                            f"Chunk {result['question'][:10]}_{i+1}", 
+                            chunk, 
+                            height=100,
+                            key=f"ground_truth_chunk_{hash(result['question'])}_{i}"
+                        )
     
-    # View Logs Tab
-    with tab4:
         st.header("Evaluation Logs")
         
         # List all log files
@@ -552,10 +615,10 @@ test_cases:
             log_path = os.path.join(evaluator.log_path, selected_log)
             
             if os.path.exists(log_path):
-                with open(log_path, 'r') as file:
+                with open(log_path, 'r', encoding="utf-8") as file:
                     log_content = file.read()
-                
-                st.text_area("Log Content", log_content, height=500)
+
+                st.text_area(f"Log Content - {selected_log}", log_content, height=500, key=f"log_content_{selected_log}")
                 
                 # Download option
                 st.download_button(
@@ -565,22 +628,6 @@ test_cases:
                     "text/plain"
                 )
             
-            # Option to view detailed logs
-            st.subheader("Detailed Query Logs")
-            detailed_logs = [f for f in os.listdir(evaluator.detailed_logs_dir) 
-                            if f.endswith('.log')]
-            
-            if detailed_logs:
-                selected_detailed_log = st.selectbox("Select detailed log:", detailed_logs)
-                detailed_log_path = os.path.join(evaluator.detailed_logs_dir, selected_detailed_log)
-                
-                if os.path.exists(detailed_log_path):
-                    with open(detailed_log_path, 'r') as file:
-                        detailed_content = file.read()
-                    
-                    st.text_area("Detailed Log Content", detailed_content, height=500)
-            else:
-                st.info("No detailed logs available yet.")
         else:
             st.info("No logs available yet. Run some evaluations first.")
             
@@ -592,7 +639,7 @@ test_cases:
         test_cases_file = "test_cases.json"
         if "test_cases" not in st.session_state:
             if os.path.exists(test_cases_file):
-                with open(test_cases_file, 'r') as f:
+                with open(test_cases_file, 'r',encoding="utf-8") as f:
                     st.session_state.test_cases = json.load(f)
             else:
                 st.session_state.test_cases = [
@@ -609,7 +656,7 @@ test_cases:
         if st.button("Add Test Case") and new_question:
             tags = [tag.strip() for tag in new_tags.split(",")] if new_tags else []
             st.session_state.test_cases.append({"question": new_question, "tags": tags})
-            with open(test_cases_file, 'w') as f:
+            with open(test_cases_file, 'w',encoding="utf-8") as f:
                 json.dump(st.session_state.test_cases, f)
             st.success("Test case added successfully!")
         
@@ -649,7 +696,7 @@ test_cases:
                 source = doc.meta.get("source", "Unknown")
                 
                 with st.expander(f"Document {i+1}: {source} (Score: {score})"):
-                    st.text_area(f"Content {i+1}", doc.content, height=200)
+                    st.text_area(f"TestCase Content {i+1}", doc.content, height=200, key=f"test_case_doc_{i}")
 
     # Create a sample YAML file if it doesn't exist
     def create_sample_yaml():
@@ -665,7 +712,7 @@ test_cases:
 """
         sample_yaml_path = "sample_test_cases.yaml"
         if not os.path.exists(sample_yaml_path):
-            with open(sample_yaml_path, "w") as f:
+            with open(sample_yaml_path, "w",encoding="utf-8") as f:
                 f.write(sample_yaml)
             return sample_yaml_path
         return None

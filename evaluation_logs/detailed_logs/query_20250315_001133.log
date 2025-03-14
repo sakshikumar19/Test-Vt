@@ -1,0 +1,46 @@
+DETAILED QUERY LOG - 2025-03-15 00:11:33
+======================================================================
+
+QUESTION: How is Vitess different from MySQL?
+
+ANSWER: ### Key Differences Between Vitess and MySQL
+
+Vitess is different from MySQL in the following ways:
+* **Scalability**: MySQL has limitations when dealing with large data sizes or a large number of concurrent users. Vitess, on the other hand, is designed to scale horizontally and can handle large clusters of MySQL instances.
+* **Sharding and High Availability**: Vitess provides built-in sharding and high availability features, which are not native to MySQL.
+* **Connection Pooling**: Vitess includes connection pooling, which helps improve performance and reduce the load on the database.
+* **Architecture**: Vitess is a database clustering system, whereas MySQL is a standalone database server.
+
+Overall, Vitess is designed to address the scalability limitations of MySQL, making it a suitable solution for large-scale applications that require high availability and performance.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.997612714767456
+  - Response Time: 16752.9 ms
+  - Retrieval Time (est.): 11727.03 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.997612714767456
+  Content:
+----------------------------------------
+that utilize any of the current unsupported cases.** For SQL syntax there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json). There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax. ## How is Vitess different from MySQL? MySQL is a popular open source database solution. MySQL delivers a fast, multi-threaded, multi-user, and robust SQL (Structured Query Language) database server. However, MySQL starts running into limitations with large data sizes or large numbers of concurrent users. Vitess is a database scaling system designed to be used with MySQL. It enables deploying, scaling and managing large clusters of MySQL instances with built-in sharding, high availability and connection pooling. ## How is Vitess different from RDS for MySQL? RDS for MySQL is a managed service from AWS which has many of the same limitations as open source or enterprise MySQL. ## How is Vitess different from AWS Aurora for MySQL? AWS Aurora for MySQL is a managed service from AWS which can scale beyond the limitations of RDS for MySQL. However, it cannot scale to the same extent as Vitess. ## Are foreign keys supported in Vitess? We generally discourage the use of foreign keys, and more specifically foreign key constraints. There may be unexpected consequences when using them in sharded keyspaces. However, you can use foreign key constraints when their scope is contained within a shard or unsharded keyspace. You will need to [configure](https://vitess.io/docs/user-guides/vschema-guide/foreign-keys/) Vitess with the desired level of support. Please note that if you do shard or re-shard an existing keyspqce with foreign keys, you will need to take extra steps to confirm they are working as intended. --- title: Components weight: 3 --- ## What is VTGate and how does it work? VTGate is a lightweight proxy server that sits between your application and your shards, which contain your data. 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.5415756106376648
+  Content:
+----------------------------------------
+Supported Databases For Imports Vitess supports importing from a wide range of databases that include: - [MySQL](https://www.mysql.com/) version 5.7 to 8.0. Experimental support for 8.4. - [Percona Server for MySQL](https://www.percona.com/software/mysql-database/percona-server) version 5.7 to 8.0. Experimental support for 8.4. - [MariaDB](https://mariadb.com) versions 10.10+ ## See also + [MySQL Compatibility](../../reference/compatibility/mysql-compatibility/) --- title: What Is Vitess weight: 1 featured: true --- Vitess is a database solution for deploying, scaling and managing large clusters of open-source database instances. It currently supports MySQL and Percona Server for MySQL. It's architected to run as effectively in a public or private cloud architecture as it does on dedicated hardware. It combines and extends many important SQL features with the scalability of a NoSQL database. Vitess can help you with the following problems: 1. Scaling a SQL database by allowing you to shard it, while keeping application changes to a minimum. 2. Migrating from bare-metal or VMs to a private or public cloud. 3. Deploying and managing a large number of SQL database instances. Vitess includes compliant JDBC and Go database drivers using a native query protocol. Additionally, it implements the MySQL server protocol which is compatible with virtually any other language. Vitess served all YouTube database traffic for over five years. Many enterprises have now adopted Vitess for their production needs. ## Features * Performance - Connection pooling - Multiplex front-end application queries onto a pool of MySQL connections to optimize performance. - Query de-duping – Reuse results of an in-flight query for any identical requests received while the in-flight query was still executing. - Transaction manager – Limit number of concurrent transactions and manage timeouts to optimize overall throughput. * Protection - Query rewriting and sanitization – Add limits and avoid non-deterministic updates. - Query blocking – Customize rules to prevent potentially problematic queries from hitting 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.4928686022758484
+  Content:
+----------------------------------------
+as it does on dedicated hardware. It combines and extends many SQL features with the scalability of a NoSQL database. Vitess can help you with the following problems: * Scaling a SQL database by allowing you to shard it, while keeping your application changes to a minimum. * Migrating from bare metal to a private or public cloud. * Deploying and managing a large number of SQL database instances. ## What is Vitess and MySQL's relationship? **Vitess is not a database itself, instead it is a distributed database system built around MySQL.** Vitess provides a sharding system for MySQL, as well as some operational management for its instances. Vitess will assist with actions like sharding, managing backup and restore, and adding replicas. However, it is important to note that implementers of Vitess will need to provide their own MySQL and perform their own MySQL management. The amount of MySQL management required depends on if Vitess is configured to run with "managed" MySQL or "external" MySQL. Vitess can run against various flavors/implementations of MySQL, e.g. MySQL Community Edition, MySQL Enterprise Edition and Percona Server. Vitess can also be used with many Cloud deployments of MySQL, e.g. AWS RDS, AWS Aurora, GCP Cloud SQL, etc. ## How can I migrate out of Vitess? In order to migrate out of Vitess you will need to take a backup of your data using one of the three possible methods: backup and restore, mysqldump, and go-mydumper. We recommend following the [Backup and Restore](https://vitess.io/docs/user-guides/operating-vitess/backup-and-restore/) guide for regular backups in order to migrate out of Vitess. This method is performed directly on the tablet servers and is more efficient and safer for databases of any significant size. The downside is that this is a physical MySQL instance backup, and needs to be restored accordingly. Both mysqldump and 
+----------------------------------------
+

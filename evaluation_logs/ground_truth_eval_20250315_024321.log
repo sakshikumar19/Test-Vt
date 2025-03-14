@@ -1,0 +1,109 @@
+=== GROUND TRUTH EVALUATION RESULTS ===
+Started: 2025-03-15 02:43:21
+Test Cases: 5
+==================================================
+
+TEST CASE 1: How can I debug elevated query latency on a Vitess primary?
+Expected Chunks: 3
+  1. Inspect the graphs to see if QPS has gone up. If yes, drill down on the more detailed QPS graphs to see which table, or user caused the increase.
+  2. If a table is identified, look at /debug/queryz for queries on that table.
+  3. If QPS did not go up, only latency did, inspect the per-table latency graphs.
+Retrieved Chunks: 3
+  1. --- title: Elevated query latency on primary description: Debug common issues with Vitess weight: 1 ...
+  2. specific query is causing the problem. There are two approaches: * Inspect the `/queryz` page and lo...
+  3. the areas to focus on. The first step to troubleshooting is to have an established baseline. It is r...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Missing Chunks: ['If QPS did not go up, only latency did, inspect the per-table latency graphs.']
+Answer: ### Debugging Elevated Query Latency on a Vitess Primary
+
+To debug elevated query latency on a Vitess primary, follow these steps:
+
+#### Diagnosis 1: Increased QPS
+1. **Inspect QPS graphs** to see if ...
+LLM Judge: Yes.
+--------------------------------------------------
+
+TEST CASE 2: What should I do if my Vitess primary starts up in read-only mode?
+Expected Chunks: 3
+  1. To prevent accidentally accepting writes, our default my.cnf settings tell MySQL to always start up read-only.
+  2. If VTOrc is running, then it will take care of converting the primary to read-write mode.
+  3. To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command.
+Retrieved Chunks: 3
+  1. cause. It could be network issues, or it could be a recent change in app behavior. Diagnosis 4: No p...
+  2. or `lookup_unique` vindexes. * `write_only` (false): if true, the vindex is kept updated, but a look...
+  3. weight: 8 --- Let us assume that we want to bring up a single unsharded keyspace. The first step is ...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Missing Chunks: ['To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command.']
+Answer: ### Vitess Primary Starts Up Read-Only
+
+If your Vitess primary starts up in read-only mode, you can manually fix this by using the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite...
+LLM Judge: Yes.
+--------------------------------------------------
+
+TEST CASE 3: How do I inform Vitess of a new primary tablet after a manual failover?
+Expected Chunks: 3
+  1. If you do a failover manually (not through Vitess), you'll need to tell Vitess which tablet corresponds to the new primary MySQL.
+  2. Use the [`TabletExternallyReparented`](../../reference/programs/vtctl/shards/#tabletexternallyreparented) command to tell Vitess the new primary tablet for a shard.
+  3. Older versions of Vitess supported tools like [Orchestrator](https://github.com/github/orchestrator), which can be configured to call this automatically.
+Retrieved Chunks: 3
+  1. cause. It could be network issues, or it could be a recent change in app behavior. Diagnosis 4: No p...
+  2. above, we introduced the schema tracker, which could be running on the VTTablets now. You can disabl...
+  3. (`vtgate`) whether Online DDL operations are at all possible through `VTGate`. Type: boolean. Defaul...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Missing Chunks: ['Older versions of Vitess supported tools like [Orchestrator](https://github.com/github/orchestrator), which can be configured to call this automatically.']
+Answer: ### Informing Vitess of a New Primary Tablet After Manual Failover
+
+To inform Vitess of a new primary tablet after a manual failover, you need to use the [`TabletExternallyReparented`](../../reference...
+LLM Judge: Yes.
+--------------------------------------------------
+
+TEST CASE 4: Where can I find troubleshooting resources in Vitess?
+Expected Chunks: 3
+  1. If there is a problem in the system, one or many alerts would typically fire.
+  2. When an alert fires, you have the following sources of information to perform your investigation:
+  3. * Alert values
+* Graphs
+* Diagnostic URLs
+* Log files
+Retrieved Chunks: 3
+  1. graceful shut down. {{< /info >}} For more information, please refer to the [Reparenting](../../conf...
+  2. can use this dump file to review these logs for any errors or issues. ## Collecting information for ...
+  3. specific query is causing the problem. There are two approaches: * Inspect the `/queryz` page and lo...
+Chunks Found: 0/3
+Accuracy: 0.00%
+Missing Chunks: ['If there is a problem in the system, one or many alerts would typically fire.', 'When an alert fires, you have the following sources of information to perform your investigation:', '* Alert values\n* Graphs\n* Diagnostic URLs\n* Log files']
+Answer: ### Troubleshooting Resources in Vitess
+
+To find troubleshooting resources in Vitess, you can refer to the [Troubleshooting](../../configuration-advanced/reparenting) section. Additionally, the system...
+LLM Judge: Yes.
+--------------------------------------------------
+
+TEST CASE 5: How do I check the version of my Vitess build?
+Expected Chunks: 2
+  1. Find version of Vitess build
+  2. ``` select @@version; ```
+Retrieved Chunks: 3
+  1. shutdown of MySQL: ```sh $ brew services stop mysql ``` ### Install Node 18.16.0+ (required to run V...
+  2. routed to a read-only replica (the old primary). Use the [`TabletExternallyReparented`](../../refere...
+  3. ``` ## Install Node ```sh curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh |...
+Chunks Found: 2/2
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Checking the Version of Your Vitess Build
+
+To check the version of your Vitess build, you can use the following command:
+```sh
+$ git clone https://github.com/vitessio/vitess.git
+$ cd vitess
+$ make...
+LLM Judge: No.
+--------------------------------------------------
+
+=== SUMMARY STATISTICS ===
+Total Test Cases: 5
+Total Expected Chunks: 14
+Total Chunks Found: 8
+Overall Accuracy: 57.14%

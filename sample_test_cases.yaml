@@ -1,0 +1,9 @@
+test_cases:
+- question: "What versions of MySQL or MariaDB are compatible with Vitess?"
+    expected_chunks:
+    - "Please refer to our [Supported Databases](https://vitess.io/docs/overview/supported-databases/) for the most up-to-date information."
+- question: "What does it mean for Vitess to be MySQL compatible?"
+    expected_chunks:
+    - "Vitess supports much of MySQL, with some limitations. Depending on your MySQL setup, you will need to adjust queries that utilize any of the current unsupported cases."
+    - "For SQL syntax, there is a list of example [unsupported queries](https://github.com/vitessio/vitess/blob/main/go/vt/vtgate/planbuilder/testdata/unsupported_cases.json)."
+    - "There are some further [compatibility issues](https://vitess.io/docs/reference/mysql-compatibility/) beyond pure SQL syntax."

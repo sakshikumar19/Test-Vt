@@ -1,0 +1,67 @@
+DETAILED QUERY LOG - 2025-03-15 00:18:12
+======================================================================
+
+QUESTION: How do I troubleshoot a VReplication stream that is not progressing?
+
+ANSWER: ### Troubleshooting a VReplication Stream that is Not Progressing
+To troubleshoot a VReplication stream that is not progressing, you can use the following steps:
+
+#### 1. Check the Stream Status
+Use the `status` sub-command to check the status of the stream:
+```bash
+MoveTables status
+```
+This will provide information about the current state of the stream, including any errors that may be preventing it from progressing.
+
+#### 2. Check the Stream Position
+Use the `show` sub-command to check the position of the stream:
+```bash
+MoveTables show
+```
+This will provide information about the current position of the stream, including the GTID or binlog position.
+
+#### 3. Check for Errors
+Check the output of the `status` and `show` sub-commands for any error messages that may indicate why the stream is not progressing.
+
+#### 4. Check the VReplication Metrics
+Check the VReplication metrics to see if there are any issues with the stream. You can use tools like Prometheus to scrape the metrics and build dashboards to monitor the stream.
+
+#### 5. Check the Tablet Selection Process
+If the stream is not starting, check the tablet selection process to ensure that a viable source tablet can be found. You can use the `--cells` and `--tablet-types` flags to expand the cells and tablet types available for the selection process.
+
+#### Corrective Action
+If the workflow was only created and has not yet made any progress, you can cancel the workflow and create a new one using different values for the `--cells` and `--tablet-types` flags.
+
+By following these steps, you should be able to troubleshoot and resolve issues with a VReplication stream that is not progressing.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.5968689918518066
+  - Response Time: 23108.7 ms
+  - Retrieval Time (est.): 16176.09 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.5968689918518066
+  Content:
+----------------------------------------
+Your primary tools for this are: - The `show`sub-command (e.g. [`MoveTables show`](../../../reference/vreplication/movetables/#show)) - The `status ` sub-command (e.g. [`MoveTables status`](../../../reference/vreplication/movetables/#status)) - The [VReplication related metrics](../../../reference/vreplication/metrics/) - Note that in most production systems the tablet endpoints would be scraped and stored in something like [Prometheus](https://prometheus.io) where you can build dashboards and alerting on the data ### Save Routing Rules The `Create`, `SwitchTraffic`/`ReverseTraffic`, and `Cancel`/`Complete` actions modify the [routing rules](../../../reference/features/schema-routing-rules/). You may want to save the routing rules before taking an action just in case you want to restore them for any reason (note that e.g. the `ReverseTraffic` action will automatically revert the routing rules): ```bash $ vtctldclient GetRoutingRules > /tmp/routingrules.backup.json ``` Those can later be applied this way: ```bash $ vtctldclient ApplyRoutingRules --rules-file=/tmp/routingrules.backup.json ``` ## Specific Errors and Issues ### Stream Never Starts This can be exhibited in one of two ways: 1. This error is shown in the `status`/`show` action output or the `Workflow show` output: `Error picking tablet: context has expired` 2. The stream never starts, which can be seen in the following ways: 1. The `show` output is showing an empty value in the `Pos` field for the stream 2. The `status`/`show` action output is showing `VStream has not started` for the stream When a VReplication workflow starts or restarts the [tablet selection process](../../../reference/vreplication/tablet_selection/) runs to find a viable source tablet for the stream. The `--cells` and `--tablet-types` play a key role in this process and if we cannot ever find a viable source tablet for the stream then you may want to expand the cells and/or tablet types made available for the selection process. #### Corrective Action If the workflow was only created and has not yet made any progress then you should `cancel` the workflow and `create` a new one using different values for the `--cells` 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.2101723700761795
+  Content:
+----------------------------------------
+the `PRIMARY KEY` columns if they exist, otherwise it will determine the best available `PRIMARY KEY` equivalent if one exists, and lastly if none of these are available it will use all of the columns in the table. - `TablePlan`'s `isOutsidePKRange()` function needs to compare values according to `rowstreamer`'s ordering, therefore uses the chosen index columns in order. - `tablePlanBuilder`'s `generateWhere()` function uses the target table's `target_unique_key_columns`, and then also appends any supplemental columns from `source_unique_key_target_columns` not included in `target_unique_key_columns` when they are present. If not present, again it attempts to use the `PRIMARY KEY` columns if they exist, otherwise it will determine the best available `PRIMARY KEY` equivalent if one exists, and lastly if none of these are available it will use all of the columns in the table. --- title: Life of a Stream description: How VReplication replicates data weight: 1 aliases: ['/docs/design-docs/vreplication/life-of-a-stream/'] --- ### Introduction When a VReplication workflow runs, data is copied from source to target shards. Each target `PRIMARY` tablet runs one vreplication stream (`vstream`) for each source shard that the target's [keyrange](../../../features/sharding/#key-ranges-and-partitions) overlaps with. The diagram below outlines how one such stream operates. VReplication can be asked to start from a specific [`GTID`](https://dev.mysql.com/doc/refman/en/replication-gtids-concepts.html) or from the start. When starting from a [`GTID`](https://dev.mysql.com/doc/refman/en/replication-gtids-concepts.html) the _replication_ mode is used where it streams events from the binlog. ![VReplication Flow](/img/VReplicationFlow.png) #### Full Table Copy If the entire table data is requested then the simple streaming done by the _replication_ mode can create an avalanche of events (think 100s of millions of rows). Moreover, and more importantly, it is highly likely that necesasry older binlogs are no longer available. So a _copy/catchup_ mode is initiated first: data in the tables are copied over in a consistent manner using bulk inserts. Once we have copied enough data so that we 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.20616675913333893
+  Content:
+----------------------------------------
+look at is the `/debug/status` page of the target primary [`VTtablet`](../../../concepts/tablet/). The bottom of the page shows the status of all the VReplication streams. Typically, if there is a problem, the `Last Message` column will display the error. Sometimes, it's possible that the stream cannot find a source. If so, the `Source Tablet` would be empty. ### VTTablet Logfile If the errors are not clear or if they keep disappearing, the VTTablet's INFO logfile will contain information about what it's been doing with each stream. ### Workflow Show The current status of the workflows and streams can also be fetched by using the `vtctldclient` [`Workflow Show`](../workflow/) command. ### Monitoring Variables VReplication also reports [a set of metrics](../metrics/) that can be scraped by monitoring tools like [Prometheus](https://prometheus.io). Thresholds and alerts can be set to draw attention to potential problems. --- title: VStream description: Change event streams weight: 75 aliases: ['/docs/design-docs/vreplication/vstream/vscopy/'] --- [Vitess Gateways](../../../concepts/vtgate/) (`vtgate`) provide a [`VStream` service](../../../concepts/vstream/) that allows clients to subscribe to a change event stream for a set of tables. ## Use Cases * **Change Data Capture (CDC)**: `VStream` can be used to capture changes to a table and send them to a downstream system. This is useful for building real-time data pipelines. ## Overview `VStream` supports copying the current contents of a table — as you will often not have the binary logs going back to the creation of the table — and then begin streaming new changes to the table from that point on. It supports resuming this initial copy phase if it's interrupted for any reason. It also supports automatic handling of [resharding events](../reshard/) — if the `VStream` is connected throughout then it will automatically transition from the old shards to the new when traffic is switched ([`SwitchTraffic` or `ReverseTraffic`](../reshard/#switchtraffic)), and if you were not 
+----------------------------------------
+
