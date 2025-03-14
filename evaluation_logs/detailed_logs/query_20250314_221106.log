@@ -1,0 +1,49 @@
+DETAILED QUERY LOG - 2025-03-14 22:11:06
+======================================================================
+
+QUESTION: Which design docs are available for VReplication features in Vitess?
+
+ANSWER: ### Available Design Docs for VReplication Features
+
+The provided context does not explicitly list available design documents for VReplication features in Vitess. However, it mentions the following related documents and features:
+
+* `/docs/reference/features/vreplication/` (alias)
+* `MoveTables` for data migrations
+* `Reshard` for resharding
+* `Materialize` for materialized views
+
+To find the available design docs, you may need to explore the Vitess documentation further, particularly the sections related to VReplication features, design, and options. 
+
+I don't have enough information to answer this question accurately. More information about the Vitess documentation structure or a comprehensive list of design documents would be helpful.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9948500990867615
+  - Response Time: 19876.42 ms
+  - Retrieval Time (est.): 13913.5 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9948500990867615
+  Content:
+----------------------------------------
+"UUID": "ad9bd40e-0c92-11ed-b568-920702940ee0", "Action": "stop", "Status": "completed" } ``` {{< info >}} Attempting to `stop` a VDiff that is already completed is a no-op. {{< /info >}} #### Delete VDiff Results You use the [`delete` action](../../../reference/programs/vtctldclient/vtctldclient_vdiff/vtctldclient_vdiff_delete/) to either `delete` a specific UUID or use the `all` shorthand to delete all VDiffs created for the specified keyspace and workflow. Example: ```shell $ vtctldclient --server=localhost:15999 VDiff --target-keyspace customer --workflow commerce2customer delete all VDiff delete completed $ vtctldclient --server=localhost:15999 VDiff --format=json --target-keyspace customer --workflow commerce2customer delete all { "Action": "delete", "Status": "completed" } ``` {{< info >}} Deletes are idempotent, so attempting to `delete` VDiff data that does not exist is a no-op. All VDiff data associated with a VReplication workflow is deleted when the workflow is deleted. {{< /info >}} --- title: Overview description: VReplication features, design, and options in a nutshell weight: 2 aliases: ['/docs/reference/features/vreplication/'] --- VReplication is a core component of Vitess that can be used to compose many features. It can be used for the following use cases: * **Data Migrations**: Use [`MoveTables`](../movetables/) to migrate tables into Vitess or across [`Keyspaces`](../../../concepts/keyspace/) with online revertable workflows. * **Resharding**: Use [`Reshard`](../reshard/) to scale [`Keyspaces`](../../../concepts/keyspace/) up or down as needed with automated online revertable workflows. * **Materialized Views**: Use [`Materialize`](../materialize/) to create a view of the source table in a target keyspace. This materialization can use a different primary [`vindex`](../../features/vindexes/) than the source. It can also materialize a subset of the source columns, or add new expressions from the source. This view will be kept up-to-date in real time. One can also materialize reference tables onto all shards for improved data locality, allowing Vitess to perform efficient local joins with those materialized tables. * **Realtime Rollups**: Use [`Materialize`](../materialize/) with aggregation expressions in which case Vitess will create a rolled up version of the 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9891577959060669
+  Content:
+----------------------------------------
+in an explicit transaction](https://github.com/vitessio/vitess/issues/9266) - [vtgate schema tracking](https://github.com/vitessio/vitess/issues/7995) - [Simplify Engine Primitives - extract vindex lookup from routes](https://github.com/vitessio/vitess/issues/7799) - [RFC: VSchema based routing and resharding](https://github.com/vitessio/vitess/issues/4790) - [RFC: MultiColumn Vindexes](https://github.com/vitessio/vitess/issues/3481) - [RFC: SET Statements](https://github.com/vitessio/vitess/issues/6107) - [RFC: Locking functions](https://github.com/vitessio/vitess/issues/6367) - [RFC: Replica transactions](https://github.com/vitessio/vitess/issues/6166) - [Consistent Lookup Vindexes](https://github.com/vitessio/vitess/issues/4855) - [Owned Primary Vindex](https://github.com/vitessio/vitess/blob/main/doc/design-docs/OwnedPrimaryVindexes.md) - [Foreign Key Management in Vitess](https://github.com/vitessio/vitess/issues/12967) --- title: VReplication description: Selected VReplication related design docs weight: 3 aliases: ['/docs/design/vreplication/'] --- This is a list of issues on the Vitess GitHub repo that have been, or are used as design documents and RFCs for various vreplication features. Some of these documents might not be representative of the current state of Vitess. - [VDiff2: Reimplementing VDiff on tablets](https://github.com/vitessio/vitess/issues/10134) - [VStream Copy: streaming events from the beginning](https://github.com/vitessio/vitess/issues/6277) - [Cross-Cluster Data Migration](https://github.com/vitessio/vitess/issues/7545) - [File:Position based VReplication](https://github.com/vitessio/vitess/issues/5424) --- title: VTTablet description: VTTablet related documents weight: 4 aliases: ['/docs/design/vttablet/'] --- This is a list of docs on the Vitess GitHub repo that have been, or are used as design documents and RFCs for various VTTablet features. Some of these documents might not be representative of the current state of Vitess. - [Componentizing TabletServer](https://github.com/vitessio/vitess/blob/main/doc/design-docs/ComponentizingTabletServer.md) - [Real-time Parameter Changes](https://github.com/vitessio/vitess/blob/main/doc/design-docs/RealTimeParamsChange.md) - [Row-based Replication](https://github.com/vitessio/vitess/blob/main/doc/design-docs/RowBasedReplication.md) - [TabletManager Model](https://github.com/vitessio/vitess/blob/main/doc/design-docs/TabletManagerModel.md) - [TabletServer Params as YAML](https://github.com/vitessio/vitess/blob/main/doc/design-docs/TabletServerParamsAsYAML.md) - [Fast State Transitions](https://github.com/vitessio/vitess/blob/main/doc/design-docs/VTTabletFastStateTransitions.md) --- title: Design Docs description: Collection of Vitess design docs weight: 12000 cascade: designdoc: true aliases: ['/docs/design/'] ---
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9396993517875671
+  Content:
+----------------------------------------
+sku: NULL price: 7 ************** 3. row *************** op: - order_id: 1 customer_id: 1 sku: NULL price: 7 … ``` ## Monitoring VTGates publish vstream metrics listed [here](../metrics/#vtgate-metrics). ## More Reading * [VStream Copy](https://github.com/vitessio/vitess/issues/6277) * [VStream API and Resharding](../internal/vstream-stream-migration/) * [VStream Skew Minimization](../internal/vstream-skew-detection/) * Debezium Connector for Vitess * [Docs](https://debezium.io/documentation/reference/stable/connectors/vitess.html) * [Source](https://github.com/debezium/debezium-connector-vitess/) * Blog posts * [Streaming Vitess at Bolt](https://medium.com/bolt-labs/streaming-vitess-at-bolt-f8ea93211c3f) --- title: Workflow description: VReplication command to perform common actions on all types of workflows weight: 50 --- ### Description Workflow is a convenience command for useful actions that are common to all VReplication workflows. Please see the command's [reference documentation](../../../reference/programs/vtctldclient/vtctldclient_workflow/) for additional information. --- title: VReplication description: "VReplication vtctl commands" weight: 3 aliases: ['/docs/reference/vreplication/v2/'] skip_sections: true --- --- title: How Traffic Is Switched description: How Vitess signals traffic cutover for Reshard and MoveTables weight: 2 aliases: ['/docs/design-docs/vreplication/cutover/'] --- # Related Persistent Vitess Objects {{< info >}} As the objects or keys noted below are stored in [the topo server](../../../features/topology-service/) and cached locally, the processes involved will refresh their topo data throughout the cutover process. For example, each tablet on the source and target shards that are involved in a [VReplication](../../) workflow will refresh their topo data multiple times as the state of things transition during the cutover. If we are *not* able to confirm that all tablets involved in a VReplication worfklow are able to refresh their topo data then the cutover command — e.g. [`vtctldclient SwitchTraffic`](../../switchtraffic) — will cancel the operation and return an error indicating which tablet(s) are unhealthy (including for `--dry-run` executions). {{< /info >}} ## VSchema A [VSchema](../../../../concepts/vschema/) allows you to describe how data is organized within keyspaces and shards. ## Shard Info The [`global` topo](../../../features/topology-service/#global-vs-local) contains one [`Shard`](../../../features/topology-service/#shard) key per keyspace which then contains one key per shard that has been created within the 
+----------------------------------------
+

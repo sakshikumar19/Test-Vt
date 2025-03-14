@@ -12,3 +12,6 @@ langchain-huggingface
 streamlit
 load_dotenv
 groq
+pyyaml
+markdown
+requests

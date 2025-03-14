@@ -3,10 +3,9 @@ import pandas as pd
 import os
 import time
 import json
-import csv
 from datetime import datetime
-from typing import List, Dict, Any, Optional
-from chatbot import VitessFAQChatbot, initialize_inference_llm, initialize_llm
+from typing import List, Dict, Any
+from chatbot1 import VitessFAQChatbot, initialize_inference_llm
 import pandas as pd
 import asyncio
 
@@ -18,20 +17,16 @@ class ChatbotEvaluator:
     def __init__(self, chatbot: VitessFAQChatbot, log_path: str = "evaluation_logs"):
         self.chatbot = chatbot
         self.log_path = log_path
-        self.csv_log_file = os.path.join(log_path, f"eval_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+        self.text_log_file = os.path.join(log_path, f"eval_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
         self.detailed_logs_dir = os.path.join(log_path, "detailed_logs")
         
         os.makedirs(self.log_path, exist_ok=True)
         os.makedirs(self.detailed_logs_dir, exist_ok=True)
         
-        # Initialize CSV log file with headers
-        with open(self.csv_log_file, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([
-                "timestamp", "question", "answer", "num_docs", 
-                "top_doc_score", "response_time_ms", "doc1_source", "doc1_score", 
-                "doc2_source", "doc2_score", "doc3_source", "doc3_score"
-            ])
+        with open(self.text_log_file, 'w') as file:
+            file.write("=== VITESS FAQ CHATBOT EVALUATION LOG ===\n")
+            file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            file.write("=" * 50 + "\n\n")
     
     def evaluate_query(self, question: str) -> Dict[str, Any]:
         """Evaluate a query and log the results"""
@@ -54,30 +49,15 @@ class ChatbotEvaluator:
         chunks = [doc.content for doc in retrieved_docs]
         sources = [doc.meta.get("source", "Unknown") for doc in retrieved_docs]
         
-        # Prepare document data for CSV
-        doc_data = []
-        for i in range(3):  # Capture up to 3 docs
-            if i < len(retrieved_docs):
-                doc = retrieved_docs[i]
-                doc_data.extend([
-                    doc.meta.get("source", "Unknown"),
-                    doc.score if hasattr(doc, "score") else None
-                ])
-            else:
-                doc_data.extend(["", None])  # Empty placeholders
-        
-        # Log to CSV file
-        with open(self.csv_log_file, 'a', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([
-                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                question,
-                result.get("answer", "")[:500],  # Truncate long answers
-                num_docs,
-                top_doc_score,
-                round(total_time_ms, 2),
-                *doc_data  # Unpack document data
-            ])
+        # Log to the main text log file
+        with open(self.text_log_file, 'a') as file:
+            file.write(f"QUERY: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            file.write(f"Question: {question}\n")
+            file.write(f"Docs Retrieved: {num_docs}\n")
+            file.write(f"Top Doc Score: {top_doc_score}\n")
+            file.write(f"Response Time: {round(total_time_ms, 2)} ms\n")
+            file.write(f"Sources: {', '.join(sources[:3])}\n")
+            file.write("-" * 50 + "\n\n")
         
         # Write detailed log to separate text file
         detailed_log_file = os.path.join(
@@ -108,7 +88,7 @@ class ChatbotEvaluator:
             "evaluation": {
                 "response_time_ms": round(total_time_ms, 2),
                 "num_docs_retrieved": num_docs,
-                "top_doc_score": top_doc_score,
+                "top_doc_score": top_doc_score
             }
         }
 
@@ -116,67 +96,52 @@ class ChatbotEvaluator:
         """Run evaluation on a batch of test questions"""
         results = []
         
-        # Create a special batch log file (CSV)
+        # Create a special batch log file
         batch_log_file = os.path.join(
             self.log_path, 
-            f"batch_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            f"batch_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         )
         
-        # Initialize batch CSV with headers
-        with open(batch_log_file, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([
-                "question_id", "question", "answer", "num_docs", 
-                "top_score", "response_time_ms", "doc1_source", "doc2_source", "doc3_source"
-            ])
+        with open(batch_log_file, 'w') as file:
+            file.write("=== BATCH EVALUATION RESULTS ===\n")
+            file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            file.write(f"Questions: {len(test_questions)}\n")
+            file.write("=" * 50 + "\n\n")
         
         for i, question in enumerate(test_questions):
             eval_result = self.evaluate_query(question)
-            
-            # Prepare documents info
-            docs = eval_result["result"].get("documents", [])
-            doc_sources = [doc.meta.get("source", "Unknown") for doc in docs]
-            # Pad with empty strings if less than 3 documents
-            doc_sources = doc_sources + [""] * (3 - len(doc_sources)) if len(doc_sources) < 3 else doc_sources[:3]
             
             result_dict = {
                 "question": question,
                 "answer": eval_result["result"]["answer"],
                 "num_docs": eval_result["evaluation"]["num_docs_retrieved"],
                 "top_score": eval_result["evaluation"]["top_doc_score"],
-                "response_time_ms": eval_result["evaluation"]["response_time_ms"],
-                "doc_sources": doc_sources
+                "response_time_ms": eval_result["evaluation"]["response_time_ms"]
             }
             results.append(result_dict)
             
-            # Append to the batch CSV
-            with open(batch_log_file, 'a', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow([
-                    i+1,
-                    question,
-                    eval_result['result']['answer'][:200],  # Truncate long answers
-                    eval_result['evaluation']['num_docs_retrieved'],
-                    eval_result['evaluation']['top_doc_score'],
-                    eval_result['evaluation']['response_time_ms'],
-                    *doc_sources  # Unpack document sources
-                ])
+            # Append to the batch log
+            with open(batch_log_file, 'a') as file:
+                file.write(f"QUESTION {i+1}: {question}\n")
+                file.write(f"Answer: {eval_result['result']['answer'][:100]}...\n")
+                file.write(f"Docs Retrieved: {eval_result['evaluation']['num_docs_retrieved']}\n")
+                file.write(f"Top Score: {eval_result['evaluation']['top_doc_score']}\n")
+                file.write(f"Response Time: {eval_result['evaluation']['response_time_ms']} ms\n")
+                file.write("-" * 50 + "\n\n")
         
-        # Create DataFrame from results
-        df = pd.DataFrame(results)
+        # Write summary at the end
+        with open(batch_log_file, 'a') as file:
+            file.write("=== SUMMARY STATISTICS ===\n")
+            avg_docs = sum(r["num_docs"] for r in results) / len(results)
+            avg_score = sum(r["top_score"] for r in results if r["top_score"] is not None) / len(results)
+            avg_time = sum(r["response_time_ms"] for r in results) / len(results)
+            
+            file.write(f"Average Documents Retrieved: {avg_docs:.2f}\n")
+            file.write(f"Average Top Score: {avg_score:.3f}\n")
+            file.write(f"Average Response Time: {avg_time:.0f} ms\n")
         
-        # Write summary statistics to a separate CSV
-        summary_file = os.path.join(self.log_path, f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-        with open(summary_file, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["metric", "value"])
-            writer.writerow(["total_questions", len(results)])
-            writer.writerow(["avg_docs_retrieved", f"{sum(r['num_docs'] for r in results) / len(results):.2f}"])
-            writer.writerow(["avg_top_score", f"{sum(r['top_score'] for r in results if r['top_score'] is not None) / len(results):.3f}"])
-            writer.writerow(["avg_response_time_ms", f"{sum(r['response_time_ms'] for r in results) / len(results):.0f}"])
-        
-        return df
-
+        # Still return a DataFrame for display in the Streamlit app
+        return pd.DataFrame(results)
 
 def run_streamlit_eval():
     st.set_page_config(page_title="Vitess FAQ Chatbot Evaluator", layout="wide")
@@ -193,10 +158,9 @@ def run_streamlit_eval():
             index=0
         )
         
-        # LLM model type (local or Groq)
         llm_type = st.radio(
             "LLM Type", 
-            ["Local", "Groq API"],
+            ["Local (currently defaults to Groq)", "Groq API"],
             index=0
         )
         
@@ -233,14 +197,18 @@ def run_streamlit_eval():
             try:
                 # Initialize LLM based on selection
                 if llm_type == "Local":
-                    llm = initialize_llm(llm_model)
+                    llm = initialize_inference_llm()
                 else:
-                    llm = initialize_inference_llm(model_name=llm_model)
+                    llm = initialize_inference_llm()
                 
                 chatbot = VitessFAQChatbot(
                     embedding_model=embedding_model,
                     llm_model=llm,
+                    chunk_size=300,
+                    chunk_overlap=50,
                     top_k=top_k,
+                    clone_repos=True,
+                    cleanup_repos=True
                 )
                 
                 # Ingest documents
@@ -279,7 +247,7 @@ def run_streamlit_eval():
                 result = eval_result["result"]
                 
                 # Show evaluation metrics
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3 = st.columns(3)
                 col1.metric("Documents Retrieved", eval_result["evaluation"]["num_docs_retrieved"])
                 col2.metric("Top Document Score", round(eval_result["evaluation"]["top_doc_score"], 3) if eval_result["evaluation"]["top_doc_score"] else "N/A")
                 col3.metric("Response Time", f"{eval_result['evaluation']['response_time_ms']:.0f} ms")
@@ -331,7 +299,7 @@ def run_streamlit_eval():
                 
                 # Summary metrics
                 st.subheader("Summary Metrics")
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3 = st.columns(3)
                 col1.metric("Avg. Documents Retrieved", f"{results_df['num_docs'].mean():.2f}")
                 col2.metric("Avg. Top Score", f"{results_df['top_score'].mean():.3f}")
                 col3.metric("Avg. Response Time", f"{results_df['response_time_ms'].mean():.0f} ms")
@@ -351,42 +319,25 @@ def run_streamlit_eval():
         
         # List all log files
         log_files = [f for f in os.listdir(evaluator.log_path) 
-                    if f.endswith('.csv') or f.endswith('.log')]
+                    if f.endswith('.txt') or f.endswith('.log')]
         
         if log_files:
             selected_log = st.selectbox("Select log file to view:", log_files)
             log_path = os.path.join(evaluator.log_path, selected_log)
             
             if os.path.exists(log_path):
-                if log_path.endswith('.csv'):
-                    # Display CSV as table
-                    df = pd.read_csv(log_path)
-                    st.dataframe(df)
-                else:
-                    # Display text log
-                    with open(log_path, 'r') as file:
-                        log_content = file.read()
-                    st.text_area("Log Content", log_content, height=500)
+                with open(log_path, 'r') as file:
+                    log_content = file.read()
+                
+                st.text_area("Log Content", log_content, height=500)
                 
                 # Download option
-                if log_path.endswith('.csv'):
-                    with open(log_path, 'r') as file:
-                        csv_content = file.read()
-                    st.download_button(
-                        "Download CSV File",
-                        csv_content,
-                        selected_log,
-                        "text/csv"
-                    )
-                else:
-                    with open(log_path, 'r') as file:
-                        log_content = file.read()
-                    st.download_button(
-                        "Download Log File",
-                        log_content,
-                        selected_log,
-                        "text/plain"
-                    )
+                st.download_button(
+                    "Download Log File",
+                    log_content,
+                    selected_log,
+                    "text/plain"
+                )
             
             # Option to view detailed logs
             st.subheader("Detailed Query Logs")
@@ -455,7 +406,7 @@ def run_streamlit_eval():
             result = st.session_state.current_result["result"]
             
             # Show evaluation metrics
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
             col1.metric("Documents Retrieved", st.session_state.current_result["evaluation"]["num_docs_retrieved"])
             col2.metric("Top Document Score", round(st.session_state.current_result["evaluation"]["top_doc_score"], 3) 
                         if st.session_state.current_result["evaluation"]["top_doc_score"] else "N/A")

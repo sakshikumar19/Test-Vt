@@ -1,3 +1,0 @@
-timestamp,question,answer,model_used,num_docs,top_doc_score,response_time_ms,doc1_source,doc1_score,doc2_source,doc2_score,doc3_source,doc3_score
-2025-03-11 15:54:40,What happens if mysqld_safe is not used with mysqlctld?,I don't have any knowledge base to search from. Please ingest some documentation first.,0,,0.91,,,,,,
-2025-03-11 15:55:27,What happens if mysqld_safe is not used with mysqlctld?,I don't have any knowledge base to search from. Please ingest some documentation first.,0,,1.26,,,,,,
