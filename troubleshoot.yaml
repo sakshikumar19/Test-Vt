@@ -1,0 +1,31 @@
+test_cases:
+  - question: "How can I debug elevated query latency on a Vitess primary?"
+    expected_chunks:
+      - "Inspect the graphs to see if QPS has gone up. If yes, drill down on the more detailed QPS graphs to see which table, or user caused the increase."
+      - "If a table is identified, look at /debug/queryz for queries on that table."
+      - "If QPS did not go up, only latency did, inspect the per-table latency graphs."
+
+  - question: "What should I do if my Vitess primary starts up in read-only mode?"
+    expected_chunks:
+      - "To prevent accidentally accepting writes, our default my.cnf settings tell MySQL to always start up read-only."
+      - "If VTOrc is running, then it will take care of converting the primary to read-write mode."
+      - "To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command."
+
+  - question: "How do I inform Vitess of a new primary tablet after a manual failover?"
+    expected_chunks:
+      - "If you do a failover manually (not through Vitess), you'll need to tell Vitess which tablet corresponds to the new primary MySQL."
+      - "Use the [`TabletExternallyReparented`](../../reference/programs/vtctl/shards/#tabletexternallyreparented) command to tell Vitess the new primary tablet for a shard."
+      - "Older versions of Vitess supported tools like [Orchestrator](https://github.com/github/orchestrator), which can be configured to call this automatically."
+
+  - question: "Where can I find troubleshooting resources in Vitess?"
+    expected_chunks:
+      - "If there is a problem in the system, one or many alerts would typically fire."
+      - "When an alert fires, you have the following sources of information to perform your investigation:"
+      - "* Alert values\n* Graphs\n* Diagnostic URLs\n* Log files"
+
+  - question: "How do I check the version of my Vitess build?"
+    expected_chunks:
+      - "Find version of Vitess build"
+      - "```
+select @@version;
+```"
