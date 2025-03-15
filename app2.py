@@ -352,14 +352,7 @@ def run_streamlit_eval():
         
         # Retrieval settings
         top_k = st.slider("Top K Documents", min_value=1, max_value=10, value=3)
-        
-        # File paths for ingestion
-        st.subheader("Document Ingestion")
-        document_paths = st.text_area(
-            "Document Paths (one per line)",
-            "./data/troubleshoot.txt\n./data/design-docs.txt\n./data/faq.txt\n./data/flags.txt\n./data/v22.txt"
-        ).strip().split("\n")
-    
+            
     # Create tabs for different evaluation modes
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["Single Query", "Batch Evaluation", "Ground Truth Evaluation", "View Logs", "Test Cases"])
     
@@ -380,15 +373,7 @@ def run_streamlit_eval():
                     chunk_overlap=chunk_overlap,
                     top_k=top_k,
                 )
-                
-                # Ingest documents
-                valid_paths = [path for path in document_paths if os.path.exists(path)]
-                if valid_paths:
-                    chatbot.ingest_documents(valid_paths)
-                    st.sidebar.success(f"Ingested {len(valid_paths)} documents")
-                else:
-                    st.sidebar.warning("No valid document paths found")
-                
+                                
                 # Create evaluator
                 evaluator = ChatbotEvaluator(chatbot)
                 
