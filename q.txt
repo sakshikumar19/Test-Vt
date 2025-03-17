@@ -1,0 +1,17 @@
+What is an execution plan in Vitess, and how does it optimize query execution?
+What is a scatter query in Vitess, and when is it used?
+What is the purpose of a keyspace in Vitess, and how does it differ between sharded and unsharded setups?
+What is connection pooling in Vitess, and why is it important for performance?
+What is the purpose of VStream in Vitess, and how does it facilitate change data capture (CDC)?
+How does VTGate route queries to the appropriate VTTablet servers in Vitess?
+How does Vitess manage user-defined variables and ensure session state consistency?
+What are the five ways Vitess handles MySQL system variables, and can you provide examples of each?
+Explain the role of the VTGate component in Vitess architecture. How does it help in query routing and load balancing?
+What are the key differences between Vitess and traditional MySQL in terms of scalability and transaction management?
+How does Vitess handle distributed transactions, and what are the trade-offs of using Two-Phase Commit (TwoPC)?
+What is the significance of semi-sync replication in Vitess, and how does it enhance durability and high availability?
+How would you configure Vitess to run on Kubernetes, and what are the advantages of using Vitess in a cloud-native environment?
+Describe the steps to perform a point-in-time recovery (PITR) in Vitess. What are the prerequisites for restoring to a specific GTID position?
+What are the key metrics to monitor in a Vitess cluster, and how can you use them to diagnose performance issues?
+What are the differences between Vitess and NoSQL databases in terms of query semantics and transaction support?
+How does Vitess handle backup and restore operations, and what are the key considerations for ensuring data integrity during these processes?

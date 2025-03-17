@@ -1,19 +1,35 @@
-from chatbot2 import initialize_inference_llm
+from chatbot2 import TextSplitter
 
-llm = initialize_inference_llm()
+# Sample YAML document with frontmatter
+test_text = """---
+title: "AI Research"
+author: "Sakshi Kumar"
+category: "Machine Learning"
+---
 
-prompt = f"""<s>[INST] You are an expert answer checker.
+## Introduction
+AI is transforming various industries. It is reshaping healthcare, finance, and more.
 
-You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. 
+### Neural Networks
+Neural networks mimic the brain by learning patterns from data.
 
-Reply with "Yes" if the answer is correct and fully addresses all parts of the question.  
-Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies.  
+## Future Trends
+The future of AI is exciting, with advancements in deep learning.
+"""
 
-Question: {q}
+# Instantiate the updated TextSplitter class
+splitter = TextSplitter(chunk_size=100, chunk_overlap=20)
 
-Answer: {a}
+print("lol first")
 
-Your Response:"""
+# Run the text splitting process
+documents = splitter.create_documents(test_text)
 
-answer = llm(prompt)
-print(answer)
+print("lol")
+
+# Print results for verification
+for i, doc in enumerate(documents):
+    print(f"Chunk {i+1}:")
+    print(f"Content: {doc.content}")
+    print(f"Metadata: {doc.meta}")
+    print("-" * 80)

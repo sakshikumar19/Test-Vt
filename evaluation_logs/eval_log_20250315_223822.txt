@@ -1,0 +1,44 @@
+=== VITESS FAQ CHATBOT EVALUATION LOG ===
+Started: 2025-03-15 22:38:22
+==================================================
+
+QUERY: 2025-03-15 22:38:42
+Question: How can I debug elevated query latency on a Vitess primary?
+Docs Retrieved: 4
+Top Doc Score: 0.9988910555839539
+Response Time: 20245.7 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 22:39:01
+Question: What should I do if my Vitess primary starts up in read-only mode?
+Docs Retrieved: 4
+Top Doc Score: 0.9943268895149231
+Response Time: 19266.23 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 22:39:17
+Question: How do I inform Vitess of a new primary tablet after a manual failover?
+Docs Retrieved: 4
+Top Doc Score: 0.9991499185562134
+Response Time: 15747.25 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 22:39:34
+Question: Where can I find troubleshooting resources in Vitess?
+Docs Retrieved: 4
+Top Doc Score: 0.7722737193107605
+Response Time: 17182.01 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-15 22:39:50
+Question: How do I check the version of my Vitess build?
+Docs Retrieved: 4
+Top Doc Score: 0.737102210521698
+Response Time: 15544.8 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+

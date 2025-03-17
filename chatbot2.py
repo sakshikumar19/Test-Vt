@@ -223,43 +223,104 @@ def initialize_llm(model_name):
     llm_wrapper = ''
     return llm_wrapper
 
+import re
+import yaml
+import os
+from typing import List, Dict, Any, Optional
+from haystack import Document
+
 class TextSplitter:
     """Custom text splitter with improved chunking strategy that preserves frontmatter metadata"""
     def __init__(
         self,
-        chunk_size: int = 200,
-        chunk_overlap: int = 40,
+        chunk_size: int = 300,
+        chunk_overlap: int = 50,
         separators: List[str] = None,
         keep_separator: bool = True,
         strip_whitespace: bool = True
     ):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.separators = separators or ["\n## ", "\n### ", "\n#### ", "\n", ". ", " "]
+        self.separators = separators or ["\n## ", "\n### ", "\n#### ", "\n\n", "\n", ". ", "! ", "? ", " "]
         self.keep_separator = keep_separator
         self.strip_whitespace = strip_whitespace
 
-    def _extract_frontmatter(self, text: str) -> tuple[Dict[str, Any], str]:
-        """Extract YAML frontmatter from text and return both frontmatter and content"""
-        frontmatter = {}
-        content = text
+    def _split_by_frontmatter(self, text: str) -> List[Dict[str, Any]]:
+        """Split text by frontmatter blocks and extract metadata for each section"""
+        # Match frontmatter blocks surrounded by triple-dashes
+        pattern = r'(?:^|\n)---\s*\n(.*?)\n---\s*\n'
+        matches = list(re.finditer(pattern, text, re.DOTALL))
         
-        # Look for YAML frontmatter between --- markers
-        frontmatter_match = re.match(r'^---\s*\n(.*?)\n---\s*\n(.*)$', text, re.DOTALL)
-        if frontmatter_match:
+        if not matches:
+            # No frontmatter found, return the whole text with empty metadata
+            return [{"content": text, "meta": {}}]
+        
+        sections = []
+        last_end = 0
+        
+        for i, match in enumerate(matches):
+            start, end = match.span()
+            
+            # Extract and parse the frontmatter
+            yaml_content = match.group(1)
             try:
-                yaml_content = frontmatter_match.group(1)
-                frontmatter = yaml.safe_load(yaml_content) or {}
-                content = frontmatter_match.group(2)
+                current_meta = yaml.safe_load(yaml_content) or {}
             except Exception as e:
                 print(f"Error parsing frontmatter: {e}")
+                current_meta = {}
+            
+            # If there's content before this frontmatter block (except for the first one)
+            if i > 0 and start > last_end:
+                content_before = text[last_end:start].strip()
+                if content_before:  # Only add if there's actual content
+                    sections.append({
+                        "content": content_before,
+                        "meta": sections[-1]["meta"] if sections else {}
+                    })
+            
+            # For first block, check if it's at the start
+            if i == 0 and start <= 1:  # Allow for a possible newline at the beginning
+                # Skip content before first frontmatter if it starts at beginning
+                pass
+            elif i == 0 and start > 1:
+                # There's content before the first frontmatter
+                content_before = text[:start].strip()
+                if content_before:
+                    sections.append({
+                        "content": content_before,
+                        "meta": {}
+                    })
+            
+            last_end = end
+            
+            # Save the metadata for the next section
+            if i < len(matches) - 1:
+                next_start = matches[i+1].span()[0]
+                content = text[end:next_start].strip()
+                if content:
+                    sections.append({
+                        "content": content,
+                        "meta": current_meta
+                    })
+            
+        # Add the final section after the last frontmatter
+        if last_end < len(text):
+            final_content = text[last_end:].strip()
+            if final_content:
+                sections.append({
+                    "content": final_content,
+                    "meta": current_meta  # Use the last parsed frontmatter
+                })
         
-        return frontmatter, content
+        return sections
 
     def _find_split_point(self, text: str, target_length: int) -> int:
         """Find the best point to split text based on hierarchy of separators"""
         if len(text) <= target_length:
             return len(text)
+
+        # Ensure we have a positive target length
+        target_length = max(1, target_length)
 
         for separator in self.separators:
             # Find all occurrences of the separator
@@ -271,7 +332,7 @@ class TextSplitter:
                 if valid_positions:
                     split_point = valid_positions[-1]
                     if self.keep_separator and separator != " ":
-                        # Move split point after separator
+                        # Move split point after separator to include it in the first chunk
                         split_point += len(separator)
                     return split_point
 
@@ -279,63 +340,80 @@ class TextSplitter:
         return target_length
 
     def create_documents(self, text: str, meta: Optional[Dict[str, Any]] = None) -> List[Document]:
-        """Split text into documents with intelligent chunking and preserved metadata"""
-        # Extract frontmatter if present
-        frontmatter, content = self._extract_frontmatter(text)
-        
-        # Prepare base metadata
+        """Split text into documents while ensuring frontmatter metadata persists across all chunks."""
         base_meta = meta.copy() if meta else {}
         
-        # Add frontmatter to metadata
-        if frontmatter:
-            base_meta.update(frontmatter)
+        # Split the text by frontmatter blocks
+        sections = self._split_by_frontmatter(text)
         
-        # Now proceed with chunking the content part
-        chunks = []
-        start = 0
-        content = content.strip() if self.strip_whitespace else content
-
-        while start < len(content):
-            # Determine end point for current chunk
-            end = min(start + self.chunk_size, len(content))
-            if end < len(content):
-                end = self._find_split_point(content, end)
-
-            # Extract chunk
-            chunk = content[start:end]
-            if self.strip_whitespace:
-                chunk = chunk.strip()
-
-            # Skip empty chunks
-            if chunk:
-                # Create a new metadata dict for each chunk
-                chunk_meta = base_meta.copy()
-                chunk_meta["start_idx"] = start
-                chunk_meta["end_idx"] = end
+        all_chunks = []
+        
+        for section in sections:
+            content = section["content"]
+            section_meta = base_meta.copy()
+            section_meta.update(section["meta"])
+            
+            content = content.strip() if self.strip_whitespace else content
+            
+            if not content:  # Skip empty sections
+                continue
                 
-                # Store section/heading context if possible
-                heading_match = re.search(r'^#+\s+(.+?)$', chunk, re.MULTILINE)
-                if heading_match:
-                    chunk_meta["heading"] = heading_match.group(1)
+            start_offset = 0
+            last_heading = None
+            
+            while start_offset < len(content):
+                # Determine best split point
+                end_offset = min(start_offset + self.chunk_size, len(content))
+                if end_offset < len(content):
+                    end_offset = self._find_split_point(content, end_offset)
                 
-                # Look for parent heading if this chunk doesn't have one
-                if "heading" not in chunk_meta:
-                    # Find the nearest heading before this chunk
-                    content_before = content[:start]
-                    headings = re.findall(r'^(#+)\s+(.+?)$', content_before, re.MULTILINE)
-                    if headings:
-                        level, heading = headings[-1]
-                        chunk_meta["parent_heading"] = heading
-                        chunk_meta["heading_level"] = len(level)
-
-                chunks.append(Document(content=chunk, meta=chunk_meta))
-
-            # Set start position for next chunk with overlap
-            if end == len(content):
-                break
-            start = max(0, end - self.chunk_overlap)
-
-        return chunks
+                # Ensure we're making progress
+                if end_offset <= start_offset:
+                    end_offset = min(start_offset + 1, len(content))
+                    
+                chunk_text = content[start_offset:end_offset]
+                chunk_text = chunk_text.strip() if self.strip_whitespace else chunk_text
+                
+                if chunk_text:
+                    # Each chunk gets a new metadata copy
+                    chunk_meta = section_meta.copy()
+                    
+                    # Extract heading if present
+                    heading_match = re.search(r'^#+\s+(.+?)$', chunk_text, re.MULTILINE)
+                    if heading_match:
+                        last_heading = heading_match.group(1)
+                        chunk_meta["heading"] = last_heading
+                    elif last_heading and "heading" not in chunk_meta:
+                        chunk_meta["parent_heading"] = last_heading
+                        
+                    all_chunks.append(Document(content=chunk_text, meta=chunk_meta))
+                
+                # Calculate next start offset with proper overlap handling
+                # Make sure we don't get stuck in an infinite loop
+                min_progress = 1
+                if self.chunk_overlap < self.chunk_size:
+                    new_start = end_offset - self.chunk_overlap
+                    # Ensure we're making progress
+                    if new_start <= start_offset:
+                        new_start = start_offset + 1
+                else:
+                    new_start = start_offset + 1
+                    
+                start_offset = new_start
+        
+        # Merge small chunks with the previous chunk
+        merged_chunks = []
+        for chunk in all_chunks:
+            if merged_chunks and len(chunk.content) < self.chunk_size // 2:
+                # Only merge if they have the same metadata
+                if merged_chunks[-1].meta == chunk.meta:
+                    merged_chunks[-1].content += " " + chunk.content
+                else:
+                    merged_chunks.append(chunk)
+            else:
+                merged_chunks.append(chunk)
+        
+        return merged_chunks
 
     def process_file(self, file_path: str, meta: Optional[Dict[str, Any]] = None) -> List[Document]:
         """Process a file and split into chunks while preserving metadata"""
@@ -356,7 +434,7 @@ class TextSplitter:
         """Legacy method for compatibility - converts documents back to text"""
         docs = self.create_documents(text, meta)
         return [doc.content for doc in docs]
-            
+                    
 class LocalLLMAnswerGenerator:
     """Generates answers using a pre-loaded language model"""
     def __init__(self, local_llm):
@@ -466,16 +544,16 @@ class VitessFAQChatbot:
     ):
         self.embedding_model = embedding_model
         self.llm_model = llm_model
-        print(f"llm_model type: {type(self.llm_model)}")
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
         self.top_k = top_k
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         print(f"Using device: {self.device}")
 
         # Initialize text splitter
         self.text_splitter = TextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\n## ", "\n### ", "\n#### ", "\n", ". ", " "]
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap
         )
 
         # Initialize document store using cosine similarity
@@ -712,7 +790,6 @@ class VitessFAQChatbot:
                 # Boost documents with matching title or description in metadata
                 if "title" in doc.meta and any(term in doc.meta["title"].lower() for term in question.lower().split()):
                     metadata_boost *= 1.3
-                    
                 if "description" in doc.meta and any(term in doc.meta["description"].lower() for term in question.lower().split()):
                     metadata_boost *= 1.2
                     

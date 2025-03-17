@@ -1,0 +1,108 @@
+=== VITESS FAQ CHATBOT EVALUATION LOG ===
+Started: 2025-03-16 20:19:57
+==================================================
+
+QUERY: 2025-03-16 20:20:26
+Question: What is an execution plan in Vitess, and how does it optimize query execution?
+Docs Retrieved: 4
+Top Doc Score: 0.9964818954467773
+Response Time: 28165.89 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:20:39
+Question: What is a scatter query in Vitess, and when is it used?
+Docs Retrieved: 4
+Top Doc Score: 0.9311490058898926
+Response Time: 13403.73 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:20:51
+Question: What is the purpose of a keyspace in Vitess, and how does it differ between sharded and unsharded setups?
+Docs Retrieved: 4
+Top Doc Score: 0.9876512289047241
+Response Time: 12122.35 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:21:10
+Question: What is connection pooling in Vitess, and why is it important for performance?
+Docs Retrieved: 4
+Top Doc Score: 0.9923974871635437
+Response Time: 19262.27 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:21:25
+Question: What is the purpose of VStream in Vitess, and how does it facilitate change data capture (CDC)?
+Docs Retrieved: 4
+Top Doc Score: 0.998976469039917
+Response Time: 15003.84 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:21:47
+Question: How does VTGate route queries to the appropriate VTTablet servers in Vitess?
+Docs Retrieved: 4
+Top Doc Score: 0.9965638518333435
+Response Time: 21166.23 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:22:10
+Question: How does Vitess manage user-defined variables and ensure session state consistency?
+Docs Retrieved: 4
+Top Doc Score: 0.9926734566688538
+Response Time: 23353.05 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:22:26
+Question: What are the five ways Vitess handles MySQL system variables, and can you provide examples of each?
+Docs Retrieved: 4
+Top Doc Score: 0.9986281394958496
+Response Time: 16195.96 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:22:44
+Question: Explain the role of the VTGate component in Vitess architecture. How does it help in query routing and load balancing?
+Docs Retrieved: 4
+Top Doc Score: 0.9430809617042542
+Response Time: 18270.85 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:23:00
+Question: What are the key differences between Vitess and traditional MySQL in terms of scalability and transaction management?
+Docs Retrieved: 4
+Top Doc Score: 0.9695334434509277
+Response Time: 15580.54 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:23:21
+Question: How does Vitess handle distributed transactions, and what are the trade-offs of using Two-Phase Commit (TwoPC)?
+Docs Retrieved: 4
+Top Doc Score: 0.7933860421180725
+Response Time: 21103.27 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:23:36
+Question: What is the significance of semi-sync replication in Vitess, and how does it enhance durability and high availability?
+Docs Retrieved: 4
+Top Doc Score: 0.9738962650299072
+Response Time: 14898.4 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-16 20:23:52
+Question: How does Vitess handle backup and restore operations, and what are the key considerations for ensuring data integrity during these processes?
+Docs Retrieved: 4
+Top Doc Score: 0.9790027737617493
+Response Time: 16488.86 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+

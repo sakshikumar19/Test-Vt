@@ -1,0 +1,15 @@
+question,total_expected,chunks_found,accuracy,precision,recall,f1_score,response_time_ms,top_score,num_docs,chunk_size,top_k
+"What is an execution plan in Vitess, and how does it optimize query execution?",1,1,100.0,0.25,1.0,0.4,28165.89,0.9964818954467773,4,500,4
+"What is a scatter query in Vitess, and when is it used?",1,1,100.0,0.25,1.0,0.4,13403.73,0.9311490058898926,4,500,4
+"What is the purpose of a keyspace in Vitess, and how does it differ between sharded and unsharded setups?",1,0,0.0,0.0,0.0,0,12122.35,0.9876512289047241,4,500,4
+"What is connection pooling in Vitess, and why is it important for performance?",1,1,100.0,0.25,1.0,0.4,19262.27,0.9923974871635437,4,500,4
+"What is the purpose of VStream in Vitess, and how does it facilitate change data capture (CDC)?",1,1,100.0,0.25,1.0,0.4,15003.84,0.998976469039917,4,500,4
+How does VTGate route queries to the appropriate VTTablet servers in Vitess?,1,0,0.0,0.0,0.0,0,21166.23,0.9965638518333435,4,500,4
+How does Vitess manage user-defined variables and ensure session state consistency?,1,1,100.0,0.25,1.0,0.4,23353.05,0.9926734566688538,4,500,4
+"What are the five ways Vitess handles MySQL system variables, and can you provide examples of each?",1,1,100.0,0.25,1.0,0.4,16195.96,0.9986281394958496,4,500,4
+Explain the role of the VTGate component in Vitess architecture. How does it help in query routing and load balancing?,1,1,100.0,0.25,1.0,0.4,18270.85,0.9430809617042542,4,500,4
+What are the key differences between Vitess and traditional MySQL in terms of scalability and transaction management?,1,0,0.0,0.0,0.0,0,15580.54,0.9695334434509277,4,500,4
+"How does Vitess handle distributed transactions, and what are the trade-offs of using Two-Phase Commit (TwoPC)?",1,1,100.0,0.25,1.0,0.4,21103.27,0.7933860421180725,4,500,4
+"What is the significance of semi-sync replication in Vitess, and how does it enhance durability and high availability?",1,1,100.0,0.25,1.0,0.4,14898.4,0.9738962650299072,4,500,4
+"How does Vitess handle backup and restore operations, and what are the key considerations for ensuring data integrity during these processes?",1,1,100.0,0.25,1.0,0.4,16488.86,0.9790027737617493,4,500,4
+OVERALL,13,10,76.92,0.19,0.77,0.31,18078.095384615382,N/A,N/A,500,4

@@ -1,0 +1,5 @@
+question,total_expected,chunks_found,accuracy,precision,recall,f1_score,response_time_ms,top_score,num_docs,chunk_size,top_k
+What are the two main paths (data path and control path) in Vitess that can be secured using TLS?,1,1,100.0,0.25,1.0,0.4,20662.54,0.9971574544906616,4,500,4
+Describe the process of setting up gRPC TLS encryption between vtgate and vttablet instances?,1,1,100.0,0.25,1.0,0.4,14147.39,0.9478240609169006,4,500,4
+"How can you configure a vttablet to connect to a MySQL instance using TLS, and what flags are required to enforce server certificate validation?",1,1,100.0,0.25,1.0,0.4,14458.84,0.9996864795684814,4,500,4
+What are the differences between TLS client certificate authentication (mTLS) and username/password authentication in Vitess?,1,1,100.0,0.25,1.0,0.4,15401.96,0.9917729496955872,4,500,4

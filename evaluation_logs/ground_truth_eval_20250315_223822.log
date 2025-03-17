@@ -1,0 +1,109 @@
+=== GROUND TRUTH EVALUATION RESULTS ===
+Started: 2025-03-15 22:38:22
+Chunk Size: 500
+Top K: 4
+Test Cases: 5
+==================================================
+
+TEST CASE 1: How can I debug elevated query latency on a Vitess primary?
+Expected Chunks: 3
+  1. Inspect the graphs to see if QPS has gone up. If yes, drill down on the more detailed QPS graphs to see which table, or user caused the increase.
+  2. If a table is identified, look at /debug/queryz for queries on that table.
+  3. If QPS did not go up, only latency did, inspect the per-table latency graphs.
+Retrieved Chunks: 4
+  1. --- title: Elevated query latency on primary description: Debug common issues with Vitess weight: 1 ...
+  2. specific query is causing the problem. There are two approaches: * Inspect the `/queryz` page and lo...
+  3. break up of all queries by command, keyspace, and type. #### HealthcheckConnections It shows the num...
+  4. usually running on the same machine. Each tablet is assigned a tablet type, which specifies what rol...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Precision: 0.50
+Recall: 0.67
+F1 Score: 0.57
+Missing Chunks: ['If QPS did not go up, only latency did, inspect the per-table latency graphs.']
+--------------------------------------------------
+
+TEST CASE 2: What should I do if my Vitess primary starts up in read-only mode?
+Expected Chunks: 3
+  1. To prevent accidentally accepting writes, our default my.cnf settings tell MySQL to always start up read-only.
+  2. If VTOrc is running, then it will take care of converting the primary to read-write mode.
+  3. To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command.
+Retrieved Chunks: 4
+  1. --- title: Elevated query latency on primary description: Debug common issues with Vitess weight: 1 ...
+  2. errors If you see the following error string `The MySQL server is running with the --read-only optio...
+  3. you need to do planned maintenance on the primary, it's best to first reparent to another replica wi...
+  4. a given VTTablet you will need to perform the following steps: 1. Create the new user in the databas...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Precision: 0.50
+Recall: 0.67
+F1 Score: 0.57
+Missing Chunks: ['To fix manually, you can use the [`SetReadWrite`](../../reference/programs/vtctl/tablets/#setreadwrite) command.']
+--------------------------------------------------
+
+TEST CASE 3: How do I inform Vitess of a new primary tablet after a manual failover?
+Expected Chunks: 3
+  1. If you do a failover manually (not through Vitess), you'll need to tell Vitess which tablet corresponds to the new primary MySQL.
+  2. Use the [`TabletExternallyReparented`](../../reference/programs/vtctl/shards/#tabletexternallyreparented) command to tell Vitess the new primary tablet for a shard.
+  3. Older versions of Vitess supported tools like [Orchestrator](https://github.com/github/orchestrator), which can be configured to call this automatically.
+Retrieved Chunks: 4
+  1. you need to do planned maintenance on the primary, it's best to first reparent to another replica wi...
+  2. the stream and follows it to completion. The new primary must be available within `10 minutes`, or e...
+  3. from other parts of the system where Vitess components will be launched. --- title: Initialize Shard...
+  4. for tables [corder,customer] will be updated Switch writes completed, freeze and delete vreplication...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Precision: 0.50
+Recall: 0.67
+F1 Score: 0.57
+Missing Chunks: ['Older versions of Vitess supported tools like [Orchestrator](https://github.com/github/orchestrator), which can be configured to call this automatically.']
+--------------------------------------------------
+
+TEST CASE 4: Where can I find troubleshooting resources in Vitess?
+Expected Chunks: 3
+  1. If there is a problem in the system, one or many alerts would typically fire.
+  2. When an alert fires, you have the following sources of information to perform your investigation:
+  3. * Alert values
+* Graphs
+* Diagnostic URLs
+* Log files
+Retrieved Chunks: 4
+  1. you look at your vtgate start script or at a process listing via: ```sh ps -ef | grep vtgate ``` - Y...
+  2. specific query is causing the problem. There are two approaches: * Inspect the `/queryz` page and lo...
+  3. you need to do planned maintenance on the primary, it's best to first reparent to another replica wi...
+  4. interaction between the components. Before starting, we assume that you have downloaded Vitess and f...
+Chunks Found: 2/3
+Accuracy: 66.67%
+Precision: 0.50
+Recall: 0.67
+F1 Score: 0.57
+Missing Chunks: ['* Alert values\n* Graphs\n* Diagnostic URLs\n* Log files']
+--------------------------------------------------
+
+TEST CASE 5: How do I check the version of my Vitess build?
+Expected Chunks: 2
+  1. Find version of Vitess build
+  2. ``` select @@version; ```
+Retrieved Chunks: 4
+  1. you need to do planned maintenance on the primary, it's best to first reparent to another replica wi...
+  2. the vitessio/vitess repository </span> #### Check out the vitessio/vitess repository Clone the GitHu...
+  3. --- title: Miscellaneous description: Miscellaneous design docs weight: 10 aliases: ['/docs/design/b...
+  4. is greater than 100 milliseconds, it's color-coded red. If it is greater than 10 milliseconds, it is...
+Chunks Found: 2/2
+Accuracy: 100.00%
+Precision: 0.50
+Recall: 1.00
+F1 Score: 0.67
+Missing Chunks: []
+--------------------------------------------------
+
+=== SUMMARY STATISTICS ===
+Total Test Cases: 5
+Total Expected Chunks: 14
+Total Chunks Found: 10
+Overall Accuracy: 71.43%
+Overall Precision: 0.50
+Overall Recall: 0.73
+Overall F1 Score: 0.59
+Chunk Size: 500
+Top K: 4

@@ -237,9 +237,10 @@ class ChatbotEvaluator:
                     
                     # LLM Judge evaluation
                     try:
-                        llm_judge = initialize_inference_llm()
+                        # llm_judge = initialize_inference_llm()
                         prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {eval_result["result"]["answer"]} Your Response:[/INST]</s>"""
-                        judge_response = llm_judge(prompt)
+                        # judge_response = llm_judge(prompt)
+                        judge_response = ''
                         result_dict["llm_judge"] = judge_response.strip()
                     except Exception as e:
                         result_dict["llm_judge"] = f"Error: {str(e)}"
@@ -285,14 +286,15 @@ class ChatbotEvaluator:
         
         # Add LLM judge evaluation
         try:
-            llm_judge = initialize_inference_llm()
+            # llm_judge = initialize_inference_llm()
             prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {eval_result["result"]["answer"]} Your Response:[/INST]</s>"""
-            judge_response = llm_judge(prompt)
+            # judge_response = llm_judge(prompt)
+            judge_response = ''
             result_dict["llm_judge"] = judge_response.strip()
         except Exception as e:
             result_dict["llm_judge"] = f"Error: {str(e)}"
         
-        results.append(result_dict)
+        # results.append(result_dict)
         
         # Prepare simplified DataFrame for display and CSV export
         display_results = []
@@ -418,9 +420,10 @@ def run_streamlit_eval():
                 
                 # Run LLM Judge
                 try:
-                    llm_judge = initialize_inference_llm()
+                    # llm_judge = initialize_inference_llm()
                     prompt = f"""<s>[INST] You are an expert answer checker. You will be given a question and an answer. Your task is to evaluate whether the answer accurately and completely responds to the question. Reply with "Yes" if the answer is correct and fully addresses all parts of the question. Reply with "No" if the answer is incorrect, incomplete, or contains inaccuracies. Question: {question} Answer: {result["answer"]} Your Response:[/INST]</s>"""
-                    judge_response = llm_judge(prompt)
+                    # judge_response = llm_judge(prompt)
+                    judge_response = ''
                     llm_judgment = judge_response.strip()
                 except Exception as e:
                     llm_judgment = f"Error: {str(e)}"
@@ -430,7 +433,7 @@ def run_streamlit_eval():
                 col1.metric("Documents Retrieved", eval_result["evaluation"]["num_docs_retrieved"])
                 col2.metric("Top Document Score", round(eval_result["evaluation"]["top_doc_score"], 3) if eval_result["evaluation"]["top_doc_score"] else "N/A")
                 col3.metric("Response Time", f"{eval_result['evaluation']['response_time_ms']:.0f} ms")
-                col4.metric("LLM Judge", llm_judgment)
+                # col4.metric("LLM Judge", llm_judgment)
                 
                 # Show answer
                 st.subheader("Answer")
