@@ -1,0 +1,40 @@
+test_cases:
+  - question: "I don't want anyone to be able to create foreign keys. Can I configure Vitess to reject them if someone tries?"
+    expected_chunks:
+      - "To run Vitess in this mode, set the VSchema property `foreignKeyMode` to `disallow` at the keyspace level."
+
+  - question: "I have auto-increment columns in my schema. If I go sharded, how do I make these work?"
+    expected_chunks:
+      - "Sequences"
+
+  - question: "I want to use multiple columns in my vindex, and my query patterns include queries that only filter by some of these columns. What are my options for a vindex?"
+    expected_chunks:
+      - "subsharding vindex"
+
+  - question: "Can I make changes to the vschema through the vtgate without going through vtctld?"
+    expected_chunks:
+      - "VSchema DDL"
+
+  - question: "How do I change the sharding keys for an existing table?"
+    expected_chunks:
+      - "MoveTables"
+
+  - question: "My application can't be changed to avoid transactions that are going to span multiple shards. Can Vitess support this?"
+    expected_chunks:
+      - "TwoPC"
+
+  - question: "Can Vitess handle temporary tables in a sharded keyspace?"
+    expected_chunks:
+      - "Vitess has limited support for temporary tables, only for unsharded keyspaces"
+
+  - question: "As an advanced user, how can I check the plans that Vitess is producing to run my queries?"
+    expected_chunks:
+      - "VEXPLAIN"
+
+  - question: "How do I configure Vtgate to buffer queries during disruptions?"
+    expected_chunks:
+      - "enable_buffer"
+
+  - question: "My application sometimes runs the same query but from different clients in quick succession. Does Vitess have any protection against this?"
+    expected_chunks:
+      - "Query consolidation"

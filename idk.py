@@ -1,4 +1,4 @@
-from chatbot2 import TextSplitter
+from chatbot5 import TextSplitter
 
 # Sample YAML document with frontmatter
 test_text = """---

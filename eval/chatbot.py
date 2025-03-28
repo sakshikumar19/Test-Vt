@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import time
 import yaml
+import json
 
 import pydantic
 from pydantic import ConfigDict
@@ -24,7 +25,7 @@ else:
 from haystack import Pipeline, Document
 from haystack.document_stores.in_memory import InMemoryDocumentStore
 from haystack.components.retrievers.in_memory import InMemoryBM25Retriever
-from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
+from haystack.components.preprocessors import DocumentSplitter
 from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
 from haystack.components.retrievers import InMemoryEmbeddingRetriever
 from haystack.components.converters import TextFileToDocument
@@ -38,9 +39,13 @@ from haystack import component
 from langchain_huggingface import HuggingFaceEndpoint
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, BitsAndBytesConfig
 
+from preprocessors.document_cleaner import GetDocumentCleaner
+
 from pydantic import BaseModel, ConfigDict
 import numpy as np
 from groq import Groq
+
+from doc_debugger import DocumentDebugger
 
 from dotenv import load_dotenv
 
@@ -223,218 +228,6 @@ def initialize_llm(model_name):
     #         return "Error generating response."
     llm_wrapper = ''
     return llm_wrapper
-
-import re
-import yaml
-import os
-from typing import List, Dict, Any, Optional
-from haystack import Document
-
-class TextSplitter:
-    """Custom text splitter with improved chunking strategy that preserves frontmatter metadata"""
-    def __init__(
-        self,
-        chunk_size: int = 300,
-        chunk_overlap: int = 50,
-        separators: List[str] = None,
-        keep_separator: bool = True,
-        strip_whitespace: bool = True
-    ):
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.separators = separators or ["\n## ", "\n### ", "\n#### ", "\n\n", "\n", ". ", "! ", "? ", " "]
-        self.keep_separator = keep_separator
-        self.strip_whitespace = strip_whitespace
-
-    def _split_by_frontmatter(self, text: str) -> List[Dict[str, Any]]:
-        """Split text by frontmatter blocks and extract metadata for each section"""
-        # Match frontmatter blocks surrounded by triple-dashes
-        pattern = r'(?:^|\n)---\s*\n(.*?)\n---\s*\n'
-        matches = list(re.finditer(pattern, text, re.DOTALL))
-        
-        if not matches:
-            # No frontmatter found, return the whole text with empty metadata
-            return [{"content": text, "meta": {}}]
-        
-        sections = []
-        last_end = 0
-        
-        for i, match in enumerate(matches):
-            start, end = match.span()
-            
-            # Extract and parse the frontmatter
-            yaml_content = match.group(1)
-            try:
-                current_meta = yaml.safe_load(yaml_content) or {}
-            except Exception as e:
-                print(f"Error parsing frontmatter: {e}")
-                current_meta = {}
-            
-            # If there's content before this frontmatter block (except for the first one)
-            if i > 0 and start > last_end:
-                content_before = text[last_end:start].strip()
-                if content_before:  # Only add if there's actual content
-                    sections.append({
-                        "content": content_before,
-                        "meta": sections[-1]["meta"] if sections else {}
-                    })
-            
-            # For first block, check if it's at the start
-            if i == 0 and start <= 1:  # Allow for a possible newline at the beginning
-                # Skip content before first frontmatter if it starts at beginning
-                pass
-            elif i == 0 and start > 1:
-                # There's content before the first frontmatter
-                content_before = text[:start].strip()
-                if content_before:
-                    sections.append({
-                        "content": content_before,
-                        "meta": {}
-                    })
-            
-            last_end = end
-            
-            # Save the metadata for the next section
-            if i < len(matches) - 1:
-                next_start = matches[i+1].span()[0]
-                content = text[end:next_start].strip()
-                if content:
-                    sections.append({
-                        "content": content,
-                        "meta": current_meta
-                    })
-            
-        # Add the final section after the last frontmatter
-        if last_end < len(text):
-            final_content = text[last_end:].strip()
-            if final_content:
-                sections.append({
-                    "content": final_content,
-                    "meta": current_meta  # Use the last parsed frontmatter
-                })
-        
-        return sections
-
-    def _find_split_point(self, text: str, target_length: int) -> int:
-        """Find the best point to split text based on hierarchy of separators"""
-        if len(text) <= target_length:
-            return len(text)
-
-        # Ensure we have a positive target length
-        target_length = max(1, target_length)
-
-        for separator in self.separators:
-            # Find all occurrences of the separator
-            positions = [m.start() for m in re.finditer(re.escape(separator), text[:target_length + len(separator)])]
-
-            if positions:
-                # Get the last occurrence before target_length
-                valid_positions = [pos for pos in positions if pos <= target_length]
-                if valid_positions:
-                    split_point = valid_positions[-1]
-                    if self.keep_separator and separator != " ":
-                        # Move split point after separator to include it in the first chunk
-                        split_point += len(separator)
-                    return split_point
-
-        # Fallback: split at target_length
-        return target_length
-
-    def create_documents(self, text: str, meta: Optional[Dict[str, Any]] = None) -> List[Document]:
-        """Split text into documents while ensuring frontmatter metadata persists across all chunks."""
-        base_meta = meta.copy() if meta else {}
-        
-        # Split the text by frontmatter blocks
-        sections = self._split_by_frontmatter(text)
-        
-        all_chunks = []
-        
-        for section in sections:
-            content = section["content"]
-            section_meta = base_meta.copy()
-            section_meta.update(section["meta"])
-            
-            content = content.strip() if self.strip_whitespace else content
-            
-            if not content:  # Skip empty sections
-                continue
-                
-            start_offset = 0
-            last_heading = None
-            
-            while start_offset < len(content):
-                # Determine best split point
-                end_offset = min(start_offset + self.chunk_size, len(content))
-                if end_offset < len(content):
-                    end_offset = self._find_split_point(content, end_offset)
-                
-                # Ensure we're making progress
-                if end_offset <= start_offset:
-                    end_offset = min(start_offset + 1, len(content))
-                    
-                chunk_text = content[start_offset:end_offset]
-                chunk_text = chunk_text.strip() if self.strip_whitespace else chunk_text
-                
-                if chunk_text:
-                    # Each chunk gets a new metadata copy
-                    chunk_meta = section_meta.copy()
-                    
-                    # Extract heading if present
-                    heading_match = re.search(r'^#+\s+(.+?)$', chunk_text, re.MULTILINE)
-                    if heading_match:
-                        last_heading = heading_match.group(1)
-                        chunk_meta["heading"] = last_heading
-                    elif last_heading and "heading" not in chunk_meta:
-                        chunk_meta["parent_heading"] = last_heading
-                        
-                    all_chunks.append(Document(content=chunk_text, meta=chunk_meta))
-                
-                # Calculate next start offset with proper overlap handling
-                # Make sure we don't get stuck in an infinite loop
-                min_progress = 1
-                if self.chunk_overlap < self.chunk_size:
-                    new_start = end_offset - self.chunk_overlap
-                    # Ensure we're making progress
-                    if new_start <= start_offset:
-                        new_start = start_offset + 1
-                else:
-                    new_start = start_offset + 1
-                    
-                start_offset = new_start
-        
-        # Merge small chunks with the previous chunk
-        merged_chunks = []
-        for chunk in all_chunks:
-            if merged_chunks and len(chunk.content) < self.chunk_size // 2:
-                # Only merge if they have the same metadata
-                if merged_chunks[-1].meta == chunk.meta:
-                    merged_chunks[-1].content += " " + chunk.content
-                else:
-                    merged_chunks.append(chunk)
-            else:
-                merged_chunks.append(chunk)
-        
-        return merged_chunks
-
-    def process_file(self, file_path: str, meta: Optional[Dict[str, Any]] = None) -> List[Document]:
-        """Process a file and split into chunks while preserving metadata"""
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-
-            base_meta = {"source": os.path.basename(file_path)}
-            if meta:
-                base_meta.update(meta)
-
-            return self.create_documents(content, base_meta)
-        except Exception as e:
-            print(f"Error processing file {file_path}: {e}")
-            return []
-            
-    def split_text(self, text: str, meta: Optional[Dict[str, Any]] = None) -> List[str]:
-        """Legacy method for compatibility - converts documents back to text"""
-        docs = self.create_documents(text, meta)
-        return [doc.content for doc in docs]
                     
 class LocalLLMAnswerGenerator:
     """Generates answers using a pre-loaded language model"""
@@ -531,15 +324,6 @@ Question: {question} [/INST]
             import traceback
             traceback.print_exc()
         return "I apologize, but I encountered an error generating a response. Please try rephrasing your question or ask about a different Vitess topic."
-    
-import re
-import yaml
-from typing import List, Dict
-
-import re
-import yaml
-from typing import List, Dict
-import json  # For better debug output
 
 @component
 class RobustFrontmatterExtractor:
@@ -657,29 +441,7 @@ class RobustFrontmatterExtractor:
                     print("NO FRONTMATTER FOUND")
                 
         return {"documents": processed_documents}
-                  
-@component
-class DocumentDebugger:
-    """Component to debug document content at different pipeline stages"""
-    def __init__(self, stage_name="unknown", sample_length=200):
-        self.stage_name = stage_name
-        self.sample_length = sample_length
-    
-    @component.output_types(documents=List[Document])
-    def run(self, documents: List[Document]) -> Dict[str, List[Document]]:
-        """Print document content and pass through documents unchanged"""
-        print(f"\n==== DOCUMENT DEBUGGER: {self.stage_name} ====")
-        for i, doc in enumerate(documents[:2]):  # Only show first 2 docs to avoid flooding logs
-            content_sample = doc.content[:self.sample_length]
-            print(f"Document {i}: {repr(content_sample)}...")
-            print(f"Metadata: {doc.meta}")
-            print("-" * 50)
-        if len(documents) > 2:
-            print(f"...and {len(documents)-2} more documents")
-        print(f"==== END DEBUGGER: {self.stage_name} ====\n")
-        
-        return {"documents": documents}
-                      
+                                        
 class VitessFAQChatbot:
     """Main chatbot class integrating all components"""
     def __init__(
@@ -744,10 +506,7 @@ class VitessFAQChatbot:
         self.text_converter = TextFileToDocument()
 
         # Initialize preprocessing components
-        self.cleaner = DocumentCleaner(
-            remove_empty_lines=True,
-            remove_extra_whitespaces=True
-        )
+        self.cleaner = GetDocumentCleaner()
         
         # Create frontmatter extractor
         self.frontmatter_extractor = RobustFrontmatterExtractor(

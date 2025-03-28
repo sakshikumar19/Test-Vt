@@ -3,3 +3,6 @@ myenv/
 __pycache__/
 vitess_repo/
 website_repo/
+eval/vitess/
+eval/website/
+eval/data/
