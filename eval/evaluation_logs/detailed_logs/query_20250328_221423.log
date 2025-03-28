@@ -1,0 +1,44 @@
+DETAILED QUERY LOG - 2025-03-28 22:14:23
+======================================================================
+
+QUESTION: Can VTOrc detect if a primary tablet is misconfigured but not down
+
+ANSWER: ### Detecting Misconfigured Primary Tablet
+Yes, VTOrc can detect if a primary tablet is misconfigured but not down. According to the context, VTOrc can detect the following configuration issues on the primary tablet:
+* `PrimaryIsReadOnly`
+* `PrimarySemiSyncMustBeSet`
+* `PrimarySemiSyncMustNotBeSet`
+
+If any of these issues are detected, VTOrc will fix the configurations on the primary tablet. This suggests that VTOrc can identify and correct misconfigurations on the primary tablet, even if it is not down.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 1.188554835319519
+  - Response Time: 16667.96 ms
+  - Retrieval Time (est.): 11667.57 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 1.188554835319519
+  Content:
+----------------------------------------
+lets you avoid performing the `InitShardPrimary` step. It automatically detects that the new shard doesn't have a primary and elects one for you. It detects any configuration problems in the cluster and fixes them. Here is the list of things VTOrc can do for you: | Recovery Name | Description | Fix that VTOrc does | |----------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------| | `ClusterHasNoPrimary` | VTOrc detects when a shard doesn't have any primary tablet elected | VTOrc runs PlannedReparentShard to elect a new primary | | `DeadPrimary` | VTOrc detects when the primary tablet is dead | VTOrc runs EmergencyReparentShard to elect a different primary | | `PrimaryIsReadOnly`, `PrimarySemiSyncMustBeSet`, `PrimarySemiSyncMustNotBeSet` | VTOrc detects when the primary tablet has configuration issues like being read-only, semi-sync being set or not being set | VTOrc fixes the configurations on the primary. | | `NotConnectedToPrimary`, `ConnectedToWrongPrimary`, `ReplicationStopped`, `ReplicaIsWritable`, `ReplicaSemiSyncMustBeSet`, `ReplicaSemiSyncMustNotBeSet` | VTOrc detects when a replica has configuration issues like not being connected to the primary, connected to the wrong primary, replication stopped, replica being writable, semi-sync being set or not being set | VTOrc fixes the configurations on the replica. | ### Flags For a full list of supported flags, please look at [VTOrc reference page](../../../reference/programs/vtorc). ### UI, API and Metrics For information about the UI, API and metrics that VTOrc exports, please consult this [page](../../../reference/vtorc/ui_api_metrics). ### Example invocation of VTOrc You can bring VTOrc using the following invocation: ```sh vtorc --topo_implementation etcd2 \ --topo_global_server_address "localhost:2379" \ --topo_global_root /vitess/global \ --port 15000 \ --log_dir=${VTDATAROOT}/tmp \ --recovery-period-block-duration "10m" \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You can optionally add a `clusters_to_watch` flag that contains a comma separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters. ### Durability Policies All the failovers that VTOrc performs will be honoring the [durability policies](../../configuration-basic/durability_policy). 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 1.066201400756836
+  Content:
+----------------------------------------
+a failover to another eligible replica. Otherwise, it is a no-op. You can also perform a "Planned Reparent" through the browser from the VTAdmin Dashboard. ![vtadmin-reparenting](../img/vtadmin-reparenting.png) {{< info >}} The Vitess operator performs this step automatically when a container is gracefully brought down by Kubernetes, which also takes care of the use case of a software rollout. If a container or pod is brought down abruptly or crashes, then the primary will be unavailable until Kubernetes restarts it. However, if VTOrc is also deployed, it will detect this and failover to another eligible replica as the primary. VTOrc will not intervene during a graceful shut down. {{< /info >}} For more information, please refer to the [Reparenting](../../configuration-advanced/reparenting) section. {{< info >}} A reparenting operation can fail in the middle. If so, it is possible for the system to be in a situation where two vttablets report themselves as primary. If this happens, the one with the newer timestamp wins. The vtgates will automatically treat the newer primary as authoritative. The system will eventually heal itself because the vttablets use a registration protocol via the global topo and the older tablet will demote itself to a replica when it notices that it is no longer the primary. {{< /info >}} --- title: Troubleshooting weight: 17 --- ## Understanding the Components The secret to troubleshooting a Vitess cluster well comes from knowing how all the components are wired together. Of these connections, the most important one is the query serving path: * The application sends a request to a vtgate. * The vtgate forwards that request to one or more vttablets. * The vttablets in turn send the request to MySQL. If there is any kind of problem with serving queries, these are the components to drill into. VTGates and vttablets connect 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9199549913406372
+  Content:
+----------------------------------------
+trouble connecting to the topo server. If there was a problem, there should be errors in the log file like `cannot get tablets`. If such errors are found, fix the root cause and verify again. It may be worth proactively monitoring `TopologyWatcherErrors` and `TopologyWatcherOperations`. Alerting on errors can help identify these problems early. If there are no topo errors in vtgate, check to see if the tablet record has been created by vttablet using the `vtctldclient GetTablets` command. If the tablet record is absent or does not contain the correct host and port info, check the vttablet logs to see if it has trouble connecting to the topo and is unable to publish its existence. If there are errors, fixing the issue should resolve the problem. ### Read-only errors If you see the following error string `The MySQL server is running with the --read-only option so it cannot execute this statement (errno 1290) (sqlstate HY000)` while trying to write to the primary, then it likely means that a previous `PlannedReparentShard` operation failed in the middle. Re-executing `PlannedReparentShard` against that primary should fix the problem. If this operation fails with an error saying that there is no current primary, you may have to issue an `EmergencyReparentShard` to safely elect a primary. If VTOrc is running, no action is needed because VTOrc will notice this state and fix it in a safe manner. This error can also be encountered if a new primary has been elected, but the older vttablet continues to think that it is still the primary. If this is the situation, then it is transient and will heal itself as long as components are able to communicate with each other. In this situation, the older vttablet will be in read-only mode. VTGates that are trying to send the writes 
+----------------------------------------
+

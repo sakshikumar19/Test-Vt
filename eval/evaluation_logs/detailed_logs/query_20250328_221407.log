@@ -1,0 +1,47 @@
+DETAILED QUERY LOG - 2025-03-28 22:14:07
+======================================================================
+
+QUESTION: How can I make VTOrc ignore certain keyspaces or shards?
+
+ANSWER: ### Ignoring Keyspaces or Shards in VTOrc
+You can make VTOrc ignore certain keyspaces or shards by using the `clusters_to_watch` flag and specifying the keyspaces or shards you want it to manage. Any keyspaces or shards not included in this list will be ignored by VTOrc.
+
+Example:
+```bash
+--clusters_to_watch "keyspace1,keyspace2/shard1"
+```
+In this example, VTOrc will only manage `keyspace1` and `keyspace2/shard1`, and will ignore all other keyspaces and shards.
+
+Note: The `clusters_to_watch` flag accepts a comma-separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 1.0335715770721434
+  - Response Time: 14580.94 ms
+  - Retrieval Time (est.): 10206.66 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 1.0335715770721434
+  Content:
+----------------------------------------
+servers are reachable from other parts of the system where Vitess components will be launched. --- title: Initialize Shard Primary weight: 9 --- A new primary is elected automatically by VTOrc and no user action is required. The InitShardPrimary command can be used to do the same operation manually. However, it is a destructive command and should only be used by advanced users. This command copies over the `executed_gtid_set` from the primary to the replica which can break replication if the user isn't careful. The command for `InitShardPrimary` is as follows: ```text vtctldclient \ InitShardPrimary \ --force \ commerce/0 \ cell1-100 ``` Until this step is complete, you may see errors like this in the vttablet logs: `Cannot start query service: Unknown database 'vt_xxx'`. This is because the database will be created only after a primary is elected. If you have semi-sync enabled and did not set up at least two replicas, InitShardPrimary could hang indefinitely. Even if it succeeds, future operations that perform failovers could cause this shard to go into a deadlocked state. After this step, visiting the `/debug/status` page on the vttablets should show all the tablets as healthy: ![healthy-tablet](../img/healthy-tablet.png) {{< warning >}} `InitShardPrimary` is a destructive command that resets all servers by deleting their binlog metadata. It should only be used for initializing a brand new cluster. {{< /warning >}} {{< info >}} `InitShardPrimary` is deprecated. This action is performed automatically by VTOrc. If manual action is needed, it is recommended to use `PlannedReparentShard`. {{< /info >}} --- title: Keyspaces and Shards weight: 7 --- You can create keyspaces and shards using [vtctldclient](../../../reference/programs/vtctldclient) commands. However, they are not necessary because these are implicitly created as you bring up the vttablets. The canonical information for keyspaces and shards is initially created in the global topo. This information 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.8779535293579102
+  Content:
+----------------------------------------
+>}} --- title: Keyspaces and Shards weight: 7 --- You can create keyspaces and shards using [vtctldclient](../../../reference/programs/vtctldclient) commands. However, they are not necessary because these are implicitly created as you bring up the vttablets. The canonical information for keyspaces and shards is initially created in the global topo. This information is then deployed to the cell-specific topos through rebuild commands like `RebuildKeyspaceGraph` and `RebuildVSchemaGraph`. These commands are implicitly issued on your behalf whenever applicable. But there are situations where you will have to issue them manually. For example, if you create a new cell, you will have to issue these commands to copy the data into the new cell. There are use cases where you may want to experimentally deploy changes to only some cells. Separating information from the global topo and local cells makes those experiments possible without affecting the entire deployment. Tools like [vtgate](../../../reference/programs/vtgate) and [vttablet](../../../reference/programs/vttablet) consume information from the local copy of the topo. An unsharded keyspace typically has a single shard named `0` or` -`. A sharded keyspace has shards named after the keyranges assigned to it, like `-80` and `80-`. Please refer to the section on [shard naming](../../../concepts/shard/#shard-naming) for more info on how shards are named. --- title: Monitoring weight: 16 aliases: ['/docs/launching/server-configuration/', '/docs/user-guides/server-configuration/', '/docs/user-guides/configuring-components/'] --- This section describes how to monitor Vitess components. Additionally, we recommend that you also add the necessary monitoring and alerting for the TopoServers as well as the MySQL instances running with each vttablet. ## Tools Vitess provides integrations with a variety of popular monitoring tools: Prometheus, InfluxDB and Datadog. The core infrastructure uses go's `expvar` package to export real-time variables visible as a JSON object served by the `/debug/vars` URL. The exported variables are CamelCase names. These names are algorithmically converted to the appropriate naming standards for each monitoring 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.7575074672698975
+  Content:
+----------------------------------------
+\ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You can optionally add a `clusters_to_watch` flag that contains a comma separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters. ### Durability Policies All the failovers that VTOrc performs will be honoring the [durability policies](../../configuration-basic/durability_policy). Please be careful in setting the desired durability policies for your keyspace because this will affect what situations VTOrc can recover from and what situations will require manual intervention. ### Running VTOrc using the Vitess Operator To find information about deploying VTOrc using Vitess Operator please take a look at this [page](../../../reference/vtorc/running_with_vtop). --- title: VTTablet and MySQL weight: 8 --- Let us assume that we want to bring up a single unsharded keyspace. The first step is to identify the number of replicas (including the primary) we would like to deploy. We should also make a decision about how to distribute them across the cells. Vitess requires you to assign a globally unique id (tablet UID) to every vttablet. This has to be an unsigned 32-bit integer. This is a legacy requirement derived from the fact that the MySQL server id (also an unsigned 32-bit integer) used to be the same as the tablet uid. This is not the case any more. In terms of mapping these components to machines, Vitess allows you to run multiple of these on the same machine. If this is the case, you will need to assign non-conflicting ports for these servers to listen on. VTTablet and MySQL are meant to be brought up as a pair within the same machine. By default, vttablet will connect to its MySQL over a unix socket. Let us look at the steps to bring up the first pair for an unsharded keyspace `commerce` in cell1 and a tablet 
+----------------------------------------
+

@@ -1,0 +1,43 @@
+DETAILED QUERY LOG - 2025-03-28 22:15:29
+======================================================================
+
+QUESTION: How does Vitess ensure that 2 VTOrc instances don't run conflicting recoveries?
+
+ANSWER: ### Ensuring Non-Conflicting Recoveries
+Vitess ensures that 2 VTOrc instances don't run conflicting recoveries by using the existing **central topology server**. 
+
+Each VTOrc instance acquires a **shard lock** before proceeding to run any fixes. This ensures that there is only one actor at any given point of time trying to alter the cluster.
+
+Additionally, after acquiring the shard lock, VTOrc instances **refresh their local information** to prevent running incorrect or unnecessary recoveries based on stale data.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 1.5351919770240785
+  - Response Time: 18772.91 ms
+  - Retrieval Time (est.): 13141.04 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 1.5351919770240785
+  Content:
+----------------------------------------
+- These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 start: Collect Information topoServer: Topology Server vttablets: Vttablets infoCollected: Information Received problems: Problems Found fixes: Run Fixes start --> topoServer: Every <code>topo-information-refresh-duration</code> start --> vttablets: Every <code>instance-poll-time</code> topoServer --> infoCollected: Keyspace and Vttablet records vttablets --> infoCollected: MySQL information infoCollected --> problems: Analyze collected information problems --> fixes: RPCs to Vttablets ``` # Coordination among VTOrc instances and `vtctld` Users are encouraged to run multiple instances of VTOrc monitoring the same cluster because VTOrc too, like any other service is liable to failure for reasons out of its control. Also, users run `vtctld` instances which can be used to run commands which alter the desired topology ([PlannedReparentShard](../../../user-guides/configuration-advanced/reparenting/#plannedreparentshard-planned-reparenting)) and durability requirements ([SetKeyspaceDurabilityPolicy](../../programs/vtctldclient/vtctldclient_setkeyspacedurabilitypolicy/)). The most logical question that arises is how do we ensure coordination between multiple VTOrc instances and `vtctld`. We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes. This ensures that there is only one actor at any given point of time trying to alter the cluster. Another cause of concern could be recoveries run on stale data collected by VTOrc. Since VTOrc instances use a polling method to load the information they use for fault detection, they can sometimes read outdated information. To prevent VTOrc instances from running incorrect/unnecessary recoveries, all VTOrc instances refresh their local information that they require for the fix after acquiring a shard lock. --- title: Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc --- ## Get Started The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for. Please look at the [VTOrc reference page](../../programs/vtorc) to know all the flags that VTOrc accepts. ## Configuring 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 1.2264806270599367
+  Content:
+----------------------------------------
+\ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You can optionally add a `clusters_to_watch` flag that contains a comma separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters. ### Durability Policies All the failovers that VTOrc performs will be honoring the [durability policies](../../configuration-basic/durability_policy). Please be careful in setting the desired durability policies for your keyspace because this will affect what situations VTOrc can recover from and what situations will require manual intervention. ### Running VTOrc using the Vitess Operator To find information about deploying VTOrc using Vitess Operator please take a look at this [page](../../../reference/vtorc/running_with_vtop). --- title: VTTablet and MySQL weight: 8 --- Let us assume that we want to bring up a single unsharded keyspace. The first step is to identify the number of replicas (including the primary) we would like to deploy. We should also make a decision about how to distribute them across the cells. Vitess requires you to assign a globally unique id (tablet UID) to every vttablet. This has to be an unsigned 32-bit integer. This is a legacy requirement derived from the fact that the MySQL server id (also an unsigned 32-bit integer) used to be the same as the tablet uid. This is not the case any more. In terms of mapping these components to machines, Vitess allows you to run multiple of these on the same machine. If this is the case, you will need to assign non-conflicting ports for these servers to listen on. VTTablet and MySQL are meant to be brought up as a pair within the same machine. By default, vttablet will connect to its MySQL over a unix socket. Let us look at the steps to bring up the first pair for an unsharded keyspace `commerce` in cell1 and a tablet 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.6506599795818329
+  Content:
+----------------------------------------
+an extended period of time, depending on **replica lag**. That being said, since Vitess helps you to keep your individual primary instances smaller, replica lag should be less of an issue than it would be with an unsharded large MySQL setup. ## Cross-shard atomicity When performing a write (`INSERT`, `UPDATE`, `DELETE`) across multiple shards, Vitess attempts to optimize performance, while also trying to ensure as much **atomicity** as possible. That is, Vitess will attempt to ensure that the whole write operation succeeds across all shards, or is rolled back. However, if you think about what actually needs to happen across the multiple shards, achieving full atomicity across a (potentially large) number of shards can be very expensive. As a result, Vitess does not even try to guarantee cross-shard **isolation**, but rather focuses on trying to optimize cross-shard **atomicity**. The difference here is that while the results of a single transaction might not become visible across all shards in the same instant, Vitess does try to ensure that write failures on a subset of the shards are: * rolled back * or if they cannot be rolled back, the application receives a reasonable error to that effect. As an example, imagine an insert of 20 rows into a sharded table with 4 shards. There are many ways for Vitess to take an insert like this and perform the inserts to the backend shards: ### Method 1: The naive way The first method would be to launch an autocommit insert of the subset of rows for each shard to the 4 shards. This would insert concurrently across the 4 shards, so would be great for performance. However, there are significant drawbacks: * What do we do if any of them fail? * What do we do if any/all of them time out? 
+----------------------------------------
+

@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 from chatbot import VitessFAQChatbot, initialize_inference_llm
 import pandas as pd
 import asyncio
+import sys
 
 # On Windows, use this event loop policy
 if os.name == 'nt':
@@ -299,11 +300,21 @@ class ChatbotEvaluator:
 def run_extract_docs():
     """Run the extract_docs.py script to clone repos and extract data"""
     try:
-        result = subprocess.run(["python", "../extract_docs.py"], 
-                              check=True, 
-                              stdout=subprocess.PIPE, 
-                              stderr=subprocess.PIPE,
-                              text=True)
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "extract_docs.py"))
+
+        # Check if the script exists
+        if os.path.exists(script_path):
+            try:
+                result = subprocess.run([sys.executable, script_path], 
+                                        check=True, 
+                                        stdout=subprocess.PIPE, 
+                                        stderr=subprocess.PIPE,
+                                        text=True)
+                print("Script output:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                print(f"Error executing {script_path}: {e.stderr}")
+        else:
+            print(f"Error: {script_path} not found. Ensure the file exists in the correct location.")
         return True, result.stdout
     except subprocess.CalledProcessError as e:
         return False, f"Error executing extract_docs.py: {e.stderr}"

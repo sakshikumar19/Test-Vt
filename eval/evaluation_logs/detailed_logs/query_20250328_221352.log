@@ -1,0 +1,44 @@
+DETAILED QUERY LOG - 2025-03-28 22:13:52
+======================================================================
+
+QUESTION: Is there a way to restrict the keyspace or shards a VTOrc instance keeps track off?
+
+ANSWER: ### Restricting Keyspace or Shards for VTOrc
+Yes, you can restrict the keyspace or shards a VTOrc instance keeps track of by using the `clusters_to_watch` flag. This flag accepts a comma-separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters. 
+
+Example:
+```bash
+--clusters_to_watch "keyspace1,keyspace2/shard1"
+```
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.8529508352279663
+  - Response Time: 18096.66 ms
+  - Retrieval Time (est.): 12667.66 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.8529508352279663
+  Content:
+----------------------------------------
+- These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 start: Collect Information topoServer: Topology Server vttablets: Vttablets infoCollected: Information Received problems: Problems Found fixes: Run Fixes start --> topoServer: Every <code>topo-information-refresh-duration</code> start --> vttablets: Every <code>instance-poll-time</code> topoServer --> infoCollected: Keyspace and Vttablet records vttablets --> infoCollected: MySQL information infoCollected --> problems: Analyze collected information problems --> fixes: RPCs to Vttablets ``` # Coordination among VTOrc instances and `vtctld` Users are encouraged to run multiple instances of VTOrc monitoring the same cluster because VTOrc too, like any other service is liable to failure for reasons out of its control. Also, users run `vtctld` instances which can be used to run commands which alter the desired topology ([PlannedReparentShard](../../../user-guides/configuration-advanced/reparenting/#plannedreparentshard-planned-reparenting)) and durability requirements ([SetKeyspaceDurabilityPolicy](../../programs/vtctldclient/vtctldclient_setkeyspacedurabilitypolicy/)). The most logical question that arises is how do we ensure coordination between multiple VTOrc instances and `vtctld`. We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes. This ensures that there is only one actor at any given point of time trying to alter the cluster. Another cause of concern could be recoveries run on stale data collected by VTOrc. Since VTOrc instances use a polling method to load the information they use for fault detection, they can sometimes read outdated information. To prevent VTOrc instances from running incorrect/unnecessary recoveries, all VTOrc instances refresh their local information that they require for the fix after acquiring a shard lock. --- title: Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc --- ## Get Started The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for. Please look at the [VTOrc reference page](../../programs/vtorc) to know all the flags that VTOrc accepts. ## Configuring 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.49607284069061275
+  Content:
+----------------------------------------
+\ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You can optionally add a `clusters_to_watch` flag that contains a comma separated list of keyspaces or `keyspace/shard` values. If specified, VTOrc will manage only those clusters. ### Durability Policies All the failovers that VTOrc performs will be honoring the [durability policies](../../configuration-basic/durability_policy). Please be careful in setting the desired durability policies for your keyspace because this will affect what situations VTOrc can recover from and what situations will require manual intervention. ### Running VTOrc using the Vitess Operator To find information about deploying VTOrc using Vitess Operator please take a look at this [page](../../../reference/vtorc/running_with_vtop). --- title: VTTablet and MySQL weight: 8 --- Let us assume that we want to bring up a single unsharded keyspace. The first step is to identify the number of replicas (including the primary) we would like to deploy. We should also make a decision about how to distribute them across the cells. Vitess requires you to assign a globally unique id (tablet UID) to every vttablet. This has to be an unsigned 32-bit integer. This is a legacy requirement derived from the fact that the MySQL server id (also an unsigned 32-bit integer) used to be the same as the tablet uid. This is not the case any more. In terms of mapping these components to machines, Vitess allows you to run multiple of these on the same machine. If this is the case, you will need to assign non-conflicting ports for these servers to listen on. VTTablet and MySQL are meant to be brought up as a pair within the same machine. By default, vttablet will connect to its MySQL over a unix socket. Let us look at the steps to bring up the first pair for an unsharded keyspace `commerce` in cell1 and a tablet 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.4597515821456909
+  Content:
+----------------------------------------
+>}} --- title: Keyspaces and Shards weight: 7 --- You can create keyspaces and shards using [vtctldclient](../../../reference/programs/vtctldclient) commands. However, they are not necessary because these are implicitly created as you bring up the vttablets. The canonical information for keyspaces and shards is initially created in the global topo. This information is then deployed to the cell-specific topos through rebuild commands like `RebuildKeyspaceGraph` and `RebuildVSchemaGraph`. These commands are implicitly issued on your behalf whenever applicable. But there are situations where you will have to issue them manually. For example, if you create a new cell, you will have to issue these commands to copy the data into the new cell. There are use cases where you may want to experimentally deploy changes to only some cells. Separating information from the global topo and local cells makes those experiments possible without affecting the entire deployment. Tools like [vtgate](../../../reference/programs/vtgate) and [vttablet](../../../reference/programs/vttablet) consume information from the local copy of the topo. An unsharded keyspace typically has a single shard named `0` or` -`. A sharded keyspace has shards named after the keyranges assigned to it, like `-80` and `80-`. Please refer to the section on [shard naming](../../../concepts/shard/#shard-naming) for more info on how shards are named. --- title: Monitoring weight: 16 aliases: ['/docs/launching/server-configuration/', '/docs/user-guides/server-configuration/', '/docs/user-guides/configuring-components/'] --- This section describes how to monitor Vitess components. Additionally, we recommend that you also add the necessary monitoring and alerting for the TopoServers as well as the MySQL instances running with each vttablet. ## Tools Vitess provides integrations with a variety of popular monitoring tools: Prometheus, InfluxDB and Datadog. The core infrastructure uses go's `expvar` package to export real-time variables visible as a JSON object served by the `/debug/vars` URL. The exported variables are CamelCase names. These names are algorithmically converted to the appropriate naming standards for each monitoring 
+----------------------------------------
+

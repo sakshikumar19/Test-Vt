@@ -1,0 +1,116 @@
+=== VITESS FAQ CHATBOT EVALUATION LOG ===
+Started: 2025-03-28 22:10:51
+==================================================
+
+QUERY: 2025-03-28 22:13:34
+Question: What is VTOrc?
+Docs Retrieved: 3
+Top Doc Score: 0.9845749139785767
+Response Time: 25275.35 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:13:52
+Question: Is there a way to restrict the keyspace or shards a VTOrc instance keeps track off?
+Docs Retrieved: 3
+Top Doc Score: 0.8529508352279663
+Response Time: 18096.66 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:14:07
+Question: How can I make VTOrc ignore certain keyspaces or shards?
+Docs Retrieved: 3
+Top Doc Score: 1.0335715770721434
+Response Time: 14580.94 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:14:23
+Question: Can VTOrc detect if a primary tablet is misconfigured but not down
+Docs Retrieved: 3
+Top Doc Score: 1.188554835319519
+Response Time: 16667.96 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:14:38
+Question: Can you provide an example of how to run VTOrc in the operator?
+Docs Retrieved: 3
+Top Doc Score: 1.1927717685699462
+Response Time: 14482.69 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:14:57
+Question: How do I access the VTOrc UI after having deployed it using the operator?
+Docs Retrieved: 3
+Top Doc Score: 1.1265323638916016
+Response Time: 18845.11 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:15:11
+Question: Can I run a single VTOrc instance for multiple keyspaces in the operator?
+Docs Retrieved: 3
+Top Doc Score: 1.193201494216919
+Response Time: 13954.16 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:15:29
+Question: How does Vitess ensure that 2 VTOrc instances don't run conflicting recoveries?
+Docs Retrieved: 3
+Top Doc Score: 1.5351919770240785
+Response Time: 18772.91 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:15:45
+Question: I want to debug my cluster and turn off replication on a specific instance, but VTOrc keeps fixing it. How can I stop this?
+Docs Retrieved: 3
+Top Doc Score: 0.815093994140625
+Response Time: 15335.08 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:16:03
+Question: How can I check the status of VTOrc?
+Docs Retrieved: 3
+Top Doc Score: 0.9053311347961426
+Response Time: 18151.31 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:16:19
+Question: Is there a metric in VTOrc to tell me how many recoveries are currently running?
+Docs Retrieved: 3
+Top Doc Score: 1.5240305471420288
+Response Time: 16424.62 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:16:41
+Question: I am running with the semi_sync durability policy. How many nodes have to crash for it to require manual intervention?
+Docs Retrieved: 3
+Top Doc Score: 0.2521042048931122
+Response Time: 22176.18 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:17:02
+Question: How do I change the durability policy for an existing keyspace?
+Docs Retrieved: 3
+Top Doc Score: 1.1312161445617674
+Response Time: 20427.53 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:17:18
+Question: Can I create my own durability policy for my specific use case?
+Docs Retrieved: 3
+Top Doc Score: 0.16976587772369384
+Response Time: 16465.87 ms
+Sources: Unknown, Unknown, Unknown
+--------------------------------------------------
+

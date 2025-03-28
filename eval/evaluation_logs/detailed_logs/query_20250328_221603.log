@@ -1,0 +1,43 @@
+DETAILED QUERY LOG - 2025-03-28 22:16:03
+======================================================================
+
+QUESTION: How can I check the status of VTOrc?
+
+ANSWER: ### Checking VTOrc Status
+To check the status of VTOrc, you can use the `--table-refresh-interval` flag to refresh tables in the status page. However, **I don't have enough information to answer this question** as the provided context does not mention a specific command or flag to directly check the status of VTOrc.
+
+You may need to consult the VTOrc reference page or the Vitess documentation for more information on checking the status of VTOrc. Additionally, you might need to look into the `vtctld` commands or the topology server configuration to see if there are any options to check the status of VTOrc instances. 
+
+It is also possible that the status page is accessible through a web interface, but the context does not provide enough information to confirm this.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9053311347961426
+  - Response Time: 18151.31 ms
+  - Retrieval Time (est.): 12705.92 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9053311347961426
+  Content:
+----------------------------------------
+files --max-stack-size int configure the maximum stack size in bytes (default 67108864) --mysql_server_version string MySQL server version to advertise. (default "8.0.40-Vitess") --onclose_timeout duration wait no more than this for OnClose handlers before stopping (default 10s) --onterm_timeout duration wait no more than this for OnTermSync handlers before stopping (default 10s) --pid_file string If set, the process will write its pid to the named file, and delete it on graceful shutdown. --port int port for the server --pprof strings enable profiling --pprof-http enable pprof http endpoints --purge_logs_interval duration how often try to remove old logs (default 1h0m0s) --security_policy string the name of a registered security policy to use for controlling access to URLs - empty means allow all for anyone (built-in policies: deny-all, read-only) --service_map strings comma separated list of services to enable (or disable if prefixed with '-') Example: grpc-queryservice --stderrthreshold severityFlag logs at or above this threshold go to stderr (default 1) --table-refresh-interval int interval in milliseconds to refresh tables in status page with refreshRequired class --v Level log level for V logs -v, --version print binary version --vmodule vModuleFlag comma-separated list of pattern=N settings for file-filtered logging --vschema_ddl_authorized_users string List of users authorized to execute vschema ddl operations, or '%' to allow all users. VTOrc is the automated fault detection and repair tool in Vitess. Usage: vtorc [flags] Examples: vtorc \ --topo_implementation etcd2 \ --topo_global_server_address localhost:2379 \ --topo_global_root /vitess/global \ --log_dir $VTDATAROOT/tmp \ --port 15000 \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr Flags: --allow-emergency-reparent Whether VTOrc should be allowed to run emergency reparent operation when it detects a dead primary (default true) --alsologtostderr log to standard error as well as files --audit-file-location string File location where the audit logs are to be stored --audit-purge-duration duration Duration for which audit logs are held before being purged. Should be in 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.45926238298416133
+  Content:
+----------------------------------------
+wait no more than this for OnTermSync handlers before stopping (default 10s) --pid_file string If set, the process will write its pid to the named file, and delete it on graceful shutdown. --port int port for the server --pprof strings enable profiling --pprof-http enable pprof http endpoints --purge_logs_interval duration how often try to remove old logs (default 1h0m0s) --security_policy string the name of a registered security policy to use for controlling access to URLs - empty means allow all for anyone (built-in policies: deny-all, read-only) --service_map strings comma separated list of services to enable (or disable if prefixed with '-') Example: grpc-queryservice --stderrthreshold severityFlag logs at or above this threshold go to stderr (default 1) --table-refresh-interval int interval in milliseconds to refresh tables in status page with refreshRequired class --v Level log level for V logs -v, --version print binary version --vmodule vModuleFlag comma-separated list of pattern=N settings for file-filtered logging --vschema_ddl_authorized_users string List of users authorized to execute vschema ddl operations, or '%' to allow all users. ``` --- title: vtorc series: vtorc --- ## vtorc VTOrc is the automated fault detection and repair tool in Vitess. ``` vtorc [flags] ``` ### Examples ``` vtorc \ --topo_implementation etcd2 \ --topo_global_server_address localhost:2379 \ --topo_global_root /vitess/global \ --log_dir $VTDATAROOT/tmp \ --port 15000 \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` ### Options ``` --allow-emergency-reparent Whether VTOrc should be allowed to run emergency reparent operation when it detects a dead primary (default true) --alsologtostderr log to standard error as well as files --audit-file-location string File location where the audit logs are to be stored --audit-purge-duration duration Duration for which audit logs are held before being purged. Should be in multiples of days (default 168h0m0s) --audit-to-backend Whether to store the audit log in the VTOrc database --audit-to-syslog Whether to store the audit 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.3629693269729614
+  Content:
+----------------------------------------
+single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many replicas exceed this threshold, then vtgate will send queries to the ones that have the least lag. A weighted average algorithm is used to exclude the outliers. This value is meant to match vttablet’s `degraded_threshold` value. A vtgate that comes up successfully will show all the vttablets it has discovered in its `/debug/status` page under the `Health Check Cache` section. ![vtgate-healthy-tablets](../img/vtgate-healthy-tablets.png) If vtgates cannot connect to one of the vttablets it discovered from the topo, or if the vttablet is unhealthy, it will be shown in red in the `Health Check Cache`, and a corresponding error message will be displayed next to it: ![vtgate-partially-healthy-tablets](../img/vtgate-partially-healthy-tablets.png) You can verify that the vtgates came up successfully by using the MySQL client: ```text ~/...vitess/examples/local> mysql -h 127.0.0.1 -P 15306 --user=mysql_user --password=mysql_password [snip] mysql> show databases; +----------+ | Database | +----------+ | commerce | +----------+ 1 row in set (0.00 sec) ``` The `show databases` command presents the `commerce` keyspace as a database. Under the covers, the MySQL database backing it is actually `vt_commerce`. Congratulations! You have successfully brought up a Vitess cluster. --- title: VTOrc weight: 8 --- VTOrc is the automated fault detection and repair tool of Vitess. It started off as a fork of the [Orchestrator](https://github.com/openark/orchestrator), which was then custom-fitted to the Vitess use-case running as a Vitess component. An overview of the architecture of VTOrc can be found on this [page](../../../reference/vtorc/architecture). Setting up VTOrc lets you avoid performing the `InitShardPrimary` step. It automatically detects that the new shard doesn't have a primary and elects one for you. It detects any configuration problems in the cluster and fixes them. Here is the list of things VTOrc can do for you: | Recovery Name | Description 
+----------------------------------------
+

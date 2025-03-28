@@ -1,0 +1,50 @@
+DETAILED QUERY LOG - 2025-03-28 22:17:02
+======================================================================
+
+QUESTION: How do I change the durability policy for an existing keyspace?
+
+ANSWER: ### Changing Durability Policy for an Existing Keyspace
+To change the durability policy for an existing keyspace, you can use the `SetKeyspaceDurabilityPolicy` command provided by `vtctldclient`. 
+
+The basic syntax for this command is:
+```bash
+vtctldclient SetKeyspaceDurabilityPolicy [--durability-policy=policy_name] <keyspace_name>
+```
+You need to specify the `--durability-policy` option with the desired policy name (e.g., `semi_sync`) and the name of the keyspace for which you want to change the policy.
+
+For example, to set the durability policy of the `customer` keyspace to `semi_sync`, you would use:
+```bash
+vtctldclient SetKeyspaceDurabilityPolicy --durability-policy='semi_sync' customer
+```
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 1.1312161445617674
+  - Response Time: 20427.53 ms
+  - Retrieval Time (est.): 14299.27 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 1.1312161445617674
+  Content:
+----------------------------------------
+as dictated by registered plugins. To set the durability policy of customer keyspace to semi_sync, you would use the following command: SetKeyspaceDurabilityPolicy --durability-policy='semi_sync' customer ``` vtctldclient SetKeyspaceDurabilityPolicy [--durability-policy=policy_name] <keyspace name> ``` ### Options ``` --durability-policy string Type of durability to enforce for this keyspace. Default is none. Other values include 'semi_sync' and others as dictated by registered plugins. (default "none") -h, --help help for SetKeyspaceDurabilityPolicy ``` ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the command (default 1h0m0s) --compact use compact format for otherwise verbose outputs --server string server to use for the connection (required) --topo-global-root string the path of the global topology data in the global topology server (default "/vitess/global") --topo-global-server-address strings the address of the global topology server(s) (default [localhost:2379]) --topo-implementation string the topology implementation to use (default "etcd2") ``` ### SEE ALSO * [vtctldclient](../) - Executes a cluster management command on the remote vtctld server or alternatively as a standalone binary using --server=internal. --- title: SetShardIsPrimaryServing series: vtctldclient --- ## vtctldclient SetShardIsPrimaryServing Add or remove a shard from serving. This is meant as an emergency function. It does not rebuild any serving graphs; i.e. it does not run `RebuildKeyspaceGraph`. ``` vtctldclient SetShardIsPrimaryServing <keyspace/shard> <true/false> ``` ### Options ``` -h, --help help for SetShardIsPrimaryServing ``` ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the command (default 1h0m0s) --compact use compact format for otherwise verbose outputs --server string server to use for the connection (required) --topo-global-root string the path of the global topology data in the global topology server (default "/vitess/global") --topo-global-server-address strings the address of the global topology server(s) (default [localhost:2379]) --topo-implementation string the topology implementation to use (default "etcd2") ``` ### SEE ALSO * [vtctldclient](../) - Executes a cluster management command on the remote vtctld server or 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9966434955596923
+  Content:
+----------------------------------------
+### Options inherited from parent commands ``` --action_timeout duration timeout to use for the command (default 1h0m0s) --compact use compact format for otherwise verbose outputs --server string server to use for the connection (required) --topo-global-root string the path of the global topology data in the global topology server (default "/vitess/global") --topo-global-server-address strings the address of the global topology server(s) (default [localhost:2379]) --topo-implementation string the topology implementation to use (default "etcd2") ``` ### SEE ALSO * [vtctldclient](../) - Executes a cluster management command on the remote vtctld server or alternatively as a standalone binary using --server=internal. --- title: CreateKeyspace series: vtctldclient --- ## vtctldclient CreateKeyspace Creates the specified keyspace in the topology. ### Synopsis Creates the specified keyspace in the topology. For a SNAPSHOT keyspace, the request must specify the name of a base keyspace, as well as a snapshot time. ``` vtctldclient CreateKeyspace <keyspace> [--force|-f] [--type KEYSPACE_TYPE] [--base-keyspace KEYSPACE --snapshot-timestamp TIME] [--served-from DB_TYPE:KEYSPACE ...] [--durability-policy <policy_name>] [--sidecar-db-name <db_name>] ``` ### Options ``` -e, --allow-empty-vschema Allows a new keyspace to have no vschema. --base-keyspace string The base keyspace for a snapshot keyspace. --durability-policy string Type of durability to enforce for this keyspace. Default is none. Possible values include 'semi_sync' and others as dictated by registered plugins. (default "none") -f, --force Proceeds even if the keyspace already exists. Does not overwrite the existing keyspace record. -h, --help help for CreateKeyspace --sidecar-db-name string (Experimental) Name of the Vitess sidecar database that tablets in this keyspace will use for internal metadata. (default "_vt") --snapshot-timestamp string The snapshot time for a snapshot keyspace, as a timestamp in RFC3339 format. --type cli.KeyspaceTypeFlag The type of the keyspace. (default NORMAL) ``` ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the command (default 1h0m0s) --compact use compact format for otherwise verbose outputs --server 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.9496779441833496
+  Content:
+----------------------------------------
+outputs --server string server to use for the connection (required) --topo-global-root string the path of the global topology data in the global topology server (default "/vitess/global") --topo-global-server-address strings the address of the global topology server(s) (default [localhost:2379]) --topo-implementation string the topology implementation to use (default "etcd2") ``` ### SEE ALSO * [vtctldclient](../) - Executes a cluster management command on the remote vtctld server or alternatively as a standalone binary using --server=internal. --- title: RunHealthCheck series: vtctldclient --- ## vtctldclient RunHealthCheck Runs a healthcheck on the remote tablet. ``` vtctldclient RunHealthCheck <tablet_alias> ``` ### Options ``` -h, --help help for RunHealthCheck ``` ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the command (default 1h0m0s) --compact use compact format for otherwise verbose outputs --server string server to use for the connection (required) --topo-global-root string the path of the global topology data in the global topology server (default "/vitess/global") --topo-global-server-address strings the address of the global topology server(s) (default [localhost:2379]) --topo-implementation string the topology implementation to use (default "etcd2") ``` ### SEE ALSO * [vtctldclient](../) - Executes a cluster management command on the remote vtctld server or alternatively as a standalone binary using --server=internal. --- title: SetKeyspaceDurabilityPolicy series: vtctldclient --- ## vtctldclient SetKeyspaceDurabilityPolicy Sets the durability-policy used by the specified keyspace. ### Synopsis Sets the durability-policy used by the specified keyspace. Durability policy governs the durability of the keyspace by describing which tablets should be sending semi-sync acknowledgements to the primary. Possible values include 'semi_sync', 'none' and others as dictated by registered plugins. To set the durability policy of customer keyspace to semi_sync, you would use the following command: SetKeyspaceDurabilityPolicy --durability-policy='semi_sync' customer ``` vtctldclient SetKeyspaceDurabilityPolicy [--durability-policy=policy_name] <keyspace name> ``` ### Options ``` --durability-policy string Type of durability to enforce for this keyspace. Default is none. Other values include 
+----------------------------------------
+

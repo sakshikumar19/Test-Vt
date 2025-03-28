@@ -1,0 +1,39 @@
+DETAILED QUERY LOG - 2025-03-28 22:13:34
+======================================================================
+
+QUESTION: What is VTOrc?
+
+ANSWER: ### VTOrc Definition
+VTOrc is the automated fault detection and repair tool in Vitess.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.9845749139785767
+  - Response Time: 25275.35 ms
+  - Retrieval Time (est.): 17692.74 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.9845749139785767
+  Content:
+----------------------------------------
+wait no more than this for OnTermSync handlers before stopping (default 10s) --pid_file string If set, the process will write its pid to the named file, and delete it on graceful shutdown. --port int port for the server --pprof strings enable profiling --pprof-http enable pprof http endpoints --purge_logs_interval duration how often try to remove old logs (default 1h0m0s) --security_policy string the name of a registered security policy to use for controlling access to URLs - empty means allow all for anyone (built-in policies: deny-all, read-only) --service_map strings comma separated list of services to enable (or disable if prefixed with '-') Example: grpc-queryservice --stderrthreshold severityFlag logs at or above this threshold go to stderr (default 1) --table-refresh-interval int interval in milliseconds to refresh tables in status page with refreshRequired class --v Level log level for V logs -v, --version print binary version --vmodule vModuleFlag comma-separated list of pattern=N settings for file-filtered logging --vschema_ddl_authorized_users string List of users authorized to execute vschema ddl operations, or '%' to allow all users. ``` --- title: vtorc series: vtorc --- ## vtorc VTOrc is the automated fault detection and repair tool in Vitess. ``` vtorc [flags] ``` ### Examples ``` vtorc \ --topo_implementation etcd2 \ --topo_global_server_address localhost:2379 \ --topo_global_root /vitess/global \ --log_dir $VTDATAROOT/tmp \ --port 15000 \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` ### Options ``` --allow-emergency-reparent Whether VTOrc should be allowed to run emergency reparent operation when it detects a dead primary (default true) --alsologtostderr log to standard error as well as files --audit-file-location string File location where the audit logs are to be stored --audit-purge-duration duration Duration for which audit logs are held before being purged. Should be in multiples of days (default 168h0m0s) --audit-to-backend Whether to store the audit log in the VTOrc database --audit-to-syslog Whether to store the audit 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.9292792081832886
+  Content:
+----------------------------------------
+single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many replicas exceed this threshold, then vtgate will send queries to the ones that have the least lag. A weighted average algorithm is used to exclude the outliers. This value is meant to match vttablet’s `degraded_threshold` value. A vtgate that comes up successfully will show all the vttablets it has discovered in its `/debug/status` page under the `Health Check Cache` section. ![vtgate-healthy-tablets](../img/vtgate-healthy-tablets.png) If vtgates cannot connect to one of the vttablets it discovered from the topo, or if the vttablet is unhealthy, it will be shown in red in the `Health Check Cache`, and a corresponding error message will be displayed next to it: ![vtgate-partially-healthy-tablets](../img/vtgate-partially-healthy-tablets.png) You can verify that the vtgates came up successfully by using the MySQL client: ```text ~/...vitess/examples/local> mysql -h 127.0.0.1 -P 15306 --user=mysql_user --password=mysql_password [snip] mysql> show databases; +----------+ | Database | +----------+ | commerce | +----------+ 1 row in set (0.00 sec) ``` The `show databases` command presents the `commerce` keyspace as a database. Under the covers, the MySQL database backing it is actually `vt_commerce`. Congratulations! You have successfully brought up a Vitess cluster. --- title: VTOrc weight: 8 --- VTOrc is the automated fault detection and repair tool of Vitess. It started off as a fork of the [Orchestrator](https://github.com/openark/orchestrator), which was then custom-fitted to the Vitess use-case running as a Vitess component. An overview of the architecture of VTOrc can be found on this [page](../../../reference/vtorc/architecture). Setting up VTOrc lets you avoid performing the `InitShardPrimary` step. It automatically detects that the new shard doesn't have a primary and elects one for you. It detects any configuration problems in the cluster and fixes them. Here is the list of things VTOrc can do for you: | Recovery Name | Description 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.59063720703125
+  Content:
+----------------------------------------
+Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc --- ## Get Started The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for. Please look at the [VTOrc reference page](../../programs/vtorc) to know all the flags that VTOrc accepts. ## Configuring VTOrc in Vitess Operator The VTOrc can be configured to run for a given keyspace by specifying the `vitessOrchestrator` specification as part of the `keyspace` spec. Resource limits and requests can be specified as part of the configuration and the default behaviour of VTOrc can be changed by specifying any desired flags in the `extraFlags` field. The VTOrc UI runs on the port `15000` of the container and port-forwarding can be setup to access it. ## Example Configuration An example deployment from the VTOrc [end to end test](https://github.com/planetscale/vitess-operator/tree/main/test/endtoend) on the Vitess Operator looks like: ```yaml keyspaces: - name: commerce durabilityPolicy: semi_sync turndownPolicy: Immediate vitessOrchestrator: resources: limits: memory: 128Mi requests: cpu: 100m memory: 128Mi extraFlags: recovery-period-block-duration: 5s ``` The full configuration file is available [here](https://github.com/planetscale/vitess-operator/blob/main/test/endtoend/operator/101_initial_cluster_vtorc_vtadmin.yaml). --- title: UI, API and Metrics --- # UI In order to use UI, `--port` flag has to be provided. Currently, the `/debug/status` lists the recent recoveries that VTOrc has performed. ![VTOrc-recent-recoveries](../img/VTOrc-Recent-Recoveries.png) # APIs VTOrc supports the following APIs which can be used for monitoring and changing the behaviour of VTOrc. | New API | Additional notes | |----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| | `/api/problems` | This API lists all the instances that have any problems in them. The problems range from replication not running to errant GTIDs. The new API also supports filtering using the keyspace and shard name | | `/api/disable-global-recoveries` | This API disables the global recoveries in VTOrc. This makes it so that VTOrc doesn't repair any failures it detects. | | `/api/enable-global-recoveries` | This API 
+----------------------------------------
+

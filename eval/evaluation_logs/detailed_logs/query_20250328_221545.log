@@ -1,0 +1,43 @@
+DETAILED QUERY LOG - 2025-03-28 22:15:45
+======================================================================
+
+QUESTION: I want to debug my cluster and turn off replication on a specific instance, but VTOrc keeps fixing it. How can I stop this?
+
+ANSWER: ### Stopping VTOrc from Automatically Fixing Replication
+To stop VTOrc from automatically fixing replication on a specific instance, you would need to prevent VTOrc from acquiring a shard lock for that instance or prevent it from running the specific fix. 
+
+However, **I don't have enough information to answer this question** as the provided context does not mention how to disable or customize VTOrc's automatic fixing behavior for specific instances or replication issues.
+
+You may need to consult the VTOrc reference page or the Vitess Operator documentation for more information on configuring VTOrc instances or customizing their behavior. Additionally, you might need to look into the `vtctld` commands or the topology server configuration to see if there are any options to exclude specific instances from VTOrc's automatic fixing.
+
+METRICS:
+  - Documents Retrieved: 3
+  - Top Document Score: 0.815093994140625
+  - Response Time: 15335.08 ms
+  - Retrieval Time (est.): 10734.55 ms
+
+RETRIEVED DOCUMENTS:
+Document 1:
+  Source: Unknown
+  Score: 0.815093994140625
+  Content:
+----------------------------------------
+- These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 start: Collect Information topoServer: Topology Server vttablets: Vttablets infoCollected: Information Received problems: Problems Found fixes: Run Fixes start --> topoServer: Every <code>topo-information-refresh-duration</code> start --> vttablets: Every <code>instance-poll-time</code> topoServer --> infoCollected: Keyspace and Vttablet records vttablets --> infoCollected: MySQL information infoCollected --> problems: Analyze collected information problems --> fixes: RPCs to Vttablets ``` # Coordination among VTOrc instances and `vtctld` Users are encouraged to run multiple instances of VTOrc monitoring the same cluster because VTOrc too, like any other service is liable to failure for reasons out of its control. Also, users run `vtctld` instances which can be used to run commands which alter the desired topology ([PlannedReparentShard](../../../user-guides/configuration-advanced/reparenting/#plannedreparentshard-planned-reparenting)) and durability requirements ([SetKeyspaceDurabilityPolicy](../../programs/vtctldclient/vtctldclient_setkeyspacedurabilitypolicy/)). The most logical question that arises is how do we ensure coordination between multiple VTOrc instances and `vtctld`. We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes. This ensures that there is only one actor at any given point of time trying to alter the cluster. Another cause of concern could be recoveries run on stale data collected by VTOrc. Since VTOrc instances use a polling method to load the information they use for fault detection, they can sometimes read outdated information. To prevent VTOrc instances from running incorrect/unnecessary recoveries, all VTOrc instances refresh their local information that they require for the fix after acquiring a shard lock. --- title: Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc --- ## Get Started The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for. Please look at the [VTOrc reference page](../../programs/vtorc) to know all the flags that VTOrc accepts. ## Configuring 
+----------------------------------------
+
+Document 2:
+  Source: Unknown
+  Score: 0.7066976308822631
+  Content:
+----------------------------------------
+single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many replicas exceed this threshold, then vtgate will send queries to the ones that have the least lag. A weighted average algorithm is used to exclude the outliers. This value is meant to match vttablet’s `degraded_threshold` value. A vtgate that comes up successfully will show all the vttablets it has discovered in its `/debug/status` page under the `Health Check Cache` section. ![vtgate-healthy-tablets](../img/vtgate-healthy-tablets.png) If vtgates cannot connect to one of the vttablets it discovered from the topo, or if the vttablet is unhealthy, it will be shown in red in the `Health Check Cache`, and a corresponding error message will be displayed next to it: ![vtgate-partially-healthy-tablets](../img/vtgate-partially-healthy-tablets.png) You can verify that the vtgates came up successfully by using the MySQL client: ```text ~/...vitess/examples/local> mysql -h 127.0.0.1 -P 15306 --user=mysql_user --password=mysql_password [snip] mysql> show databases; +----------+ | Database | +----------+ | commerce | +----------+ 1 row in set (0.00 sec) ``` The `show databases` command presents the `commerce` keyspace as a database. Under the covers, the MySQL database backing it is actually `vt_commerce`. Congratulations! You have successfully brought up a Vitess cluster. --- title: VTOrc weight: 8 --- VTOrc is the automated fault detection and repair tool of Vitess. It started off as a fork of the [Orchestrator](https://github.com/openark/orchestrator), which was then custom-fitted to the Vitess use-case running as a Vitess component. An overview of the architecture of VTOrc can be found on this [page](../../../reference/vtorc/architecture). Setting up VTOrc lets you avoid performing the `InitShardPrimary` step. It automatically detects that the new shard doesn't have a primary and elects one for you. It detects any configuration problems in the cluster and fixes them. Here is the list of things VTOrc can do for you: | Recovery Name | Description 
+----------------------------------------
+
+Document 3:
+  Source: Unknown
+  Score: 0.40410640239715573
+  Content:
+----------------------------------------
+range from replication not running to errant GTIDs. The new API also supports filtering using the keyspace and shard name | | `/api/disable-global-recoveries` | This API disables the global recoveries in VTOrc. This makes it so that VTOrc doesn't repair any failures it detects. | | `/api/enable-global-recoveries` | This API enables the global recoveries in VTOrc. | | `/debug/health` | This API outputs the health of the VTOrc process. | | `/debug/liveness` | This API outputs the liveness of the VTOrc process. | | `/api/replication-analysis` | This API shows the replication analysis of VTOrc. Output is in JSON format. | | `/api/errant-gtids` | This API shows the tablets that have errant GTIDs as detected by VTOrc. Output is in JSON format. This API supports filtering by keyspace and shard name. | | `/api/database-state` | This API shows the internal database state of VTOrc. This API can be used to debug VTOrc. | # Metrics Metrics are available to be seen on the `/debug/vars` page. VTOrc exports the following metrics: | Metric | Usage | |------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------| | `PendingRecoveries` | The number of recoveries in progress which haven't completed. | | `RecoveriesCount` | The number of recoveries run. This is further subdivided for all the different recoveries. | | `SuccessfulRecoveries` | The number of succesful recoveries run. This is further subdivided for all the different recoveries. | | `FailedRecoveries` | The number of recoveries that failed. This is further subdivided for all the different recoveries. | | `ErrantGtidTabletCount` | The number of tablets with errant GTIDs as detected by VTOrc. | | `DetectedProblems` | Binary gauge that shows the active problems that VTOrc has detected. This is further subdivided by TabletAlias, Keyspace, and Shard. | | `planned_reparent_counts` | Number of times Planned Reparent Shard has been run. It is further subdivided by 
+----------------------------------------
+

@@ -1,0 +1,236 @@
+=== GROUND TRUTH EVALUATION RESULTS ===
+Started: 2025-03-28 22:13:09
+Test Cases: 14
+==================================================
+
+TEST CASE 1: What is VTOrc?
+Expected Chunks: 1
+  1. VTOrc is the automated fault detection and repair tool of Vitess.
+Retrieved Chunks: 3
+  1. wait no more than this for OnTermSync handlers before stopping (default 10s) --pid_file string If se...
+  2. single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many re...
+  3. Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc -...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### VTOrc Definition
+VTOrc is the automated fault detection and repair tool in Vitess....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 2: Is there a way to restrict the keyspace or shards a VTOrc instance keeps track off?
+Expected Chunks: 1
+  1. clusters_to_watch
+Retrieved Chunks: 3
+  1. - These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 star...
+  2. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+  3. >}} --- title: Keyspaces and Shards weight: 7 --- You can create keyspaces and shards using [vtctldc...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Restricting Keyspace or Shards for VTOrc
+Yes, you can restrict the keyspace or shards a VTOrc instance keeps track of by using the `clusters_to_watch` flag. This flag accepts a comma-separated lis...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 3: How can I make VTOrc ignore certain keyspaces or shards?
+Expected Chunks: 1
+  1. clusters_to_watch
+Retrieved Chunks: 3
+  1. servers are reachable from other parts of the system where Vitess components will be launched. --- t...
+  2. >}} --- title: Keyspaces and Shards weight: 7 --- You can create keyspaces and shards using [vtctldc...
+  3. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Ignoring Keyspaces or Shards in VTOrc
+You can make VTOrc ignore certain keyspaces or shards by using the `clusters_to_watch` flag and specifying the keyspaces or shards you want it to manage. Any ...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 4: Can VTOrc detect if a primary tablet is misconfigured but not down
+Expected Chunks: 1
+  1. VTOrc detects when the primary tablet has configuration issues
+Retrieved Chunks: 3
+  1. lets you avoid performing the `InitShardPrimary` step. It automatically detects that the new shard d...
+  2. a failover to another eligible replica. Otherwise, it is a no-op. You can also perform a "Planned Re...
+  3. trouble connecting to the topo server. If there was a problem, there should be errors in the log fil...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Detecting Misconfigured Primary Tablet
+Yes, VTOrc can detect if a primary tablet is misconfigured but not down. According to the context, VTOrc can detect the following configuration issues on the...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 5: Can you provide an example of how to run VTOrc in the operator?
+Expected Chunks: 1
+  1. vitessOrchestrator:
+Retrieved Chunks: 3
+  1. Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc -...
+  2. trademarks of their respective owners. Type 'help;' or '\h' for help. Type '\c' to clear the current...
+  3. will wait for the operator (k8s install) or `vtorc` (local install) to promote one of the new tablet...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Running VTOrc in the Operator
+To run VTOrc in the Vitess Operator, you can configure it as part of the `keyspace` spec. Here's an example:
+```yaml
+keyspaces:
+  - name: commerce
+    durabilityPolic...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 6: How do I access the VTOrc UI after having deployed it using the operator?
+Expected Chunks: 1
+  1. port-forwarding can be setup to access it
+Retrieved Chunks: 3
+  1. Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc -...
+  2. trademarks of their respective owners. Type 'help;' or '\h' for help. Type '\c' to clear the current...
+  3. will wait for the operator (k8s install) or `vtorc` (local install) to promote one of the new tablet...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Accessing the VTOrc UI
+To access the VTOrc UI after deploying it using the Vitess Operator, you can use port-forwarding to access the UI, which runs on port `15000` of the container. 
+
+The context...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 7: Can I run a single VTOrc instance for multiple keyspaces in the operator?
+Expected Chunks: 1
+  1. The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for
+Retrieved Chunks: 3
+  1. Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc -...
+  2. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+  3. - These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 star...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Running a Single VTOrc Instance for Multiple Keyspaces
+According to the provided context, the Vitess operator deploys **one VTOrc instance for each keyspace** that it is configured for. 
+
+There is...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 8: How does Vitess ensure that 2 VTOrc instances don't run conflicting recoveries?
+Expected Chunks: 1
+  1. We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes.
+Retrieved Chunks: 3
+  1. - These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 star...
+  2. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+  3. an extended period of time, depending on **replica lag**. That being said, since Vitess helps you to...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Ensuring Non-Conflicting Recoveries
+Vitess ensures that 2 VTOrc instances don't run conflicting recoveries by using the existing **central topology server**. 
+
+Each VTOrc instance acquires a **sha...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 9: I want to debug my cluster and turn off replication on a specific instance, but VTOrc keeps fixing it. How can I stop this?
+Expected Chunks: 1
+  1. /api/disable-global-recoveries
+Retrieved Chunks: 3
+  1. - These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 star...
+  2. single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many re...
+  3. range from replication not running to errant GTIDs. The new API also supports filtering using the ke...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Stopping VTOrc from Automatically Fixing Replication
+To stop VTOrc from automatically fixing replication on a specific instance, you would need to prevent VTOrc from acquiring a shard lock for tha...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 10: How can I check the status of VTOrc?
+Expected Chunks: 1
+  1. /debug/health
+Retrieved Chunks: 3
+  1. files --max-stack-size int configure the maximum stack size in bytes (default 67108864) --mysql_serv...
+  2. wait no more than this for OnTermSync handlers before stopping (default 10s) --pid_file string If se...
+  3. single vttablet lags beyond this value, vtgate will not send it any queries. However, if too many re...
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['/debug/health']
+Answer: ### Checking VTOrc Status
+To check the status of VTOrc, you can use the `--table-refresh-interval` flag to refresh tables in the status page. However, **I don't have enough information to answer this ...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 11: Is there a metric in VTOrc to tell me how many recoveries are currently running?
+Expected Chunks: 1
+  1. PendingRecoveries
+Retrieved Chunks: 3
+  1. range from replication not running to errant GTIDs. The new API also supports filtering using the ke...
+  2. Running with Vitess Operator description: How to configure Vitess Kubernetes Operator to run VTOrc -...
+  3. - These are then fixed by issuing RPCs to the associated `vttablets` ```mermaid stateDiagram-v2 star...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Checking Recoveries in VTOrc
+Yes, there is a metric in VTOrc to tell you how many recoveries are currently running. 
+
+The metric is called `PendingRecoveries`, which represents the number of recov...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 12: I am running with the semi_sync durability policy. How many nodes have to crash for it to require manual intervention?
+Expected Chunks: 1
+  1. This durability policy sets the number of required semi-sync acknowledgements to 1. It only allows REPLICA type tablets to send semi-sync acknowledgements. It returns NeutralPromoteRule for REPLICA tablet types, MustNotPromoteRule for everything else.
+Retrieved Chunks: 3
+  1. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+  2. ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the comm...
+  3. shards are deleted, you can delete the keyspace with: ```text vtctldclient DeleteKeyspace commerce `...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Semi-Sync Durability Policy
+With the semi-sync durability policy, at least one replica must acknowledge a write before it is considered committed. 
+
+If you are running with this policy, **it will ...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 13: How do I change the durability policy for an existing keyspace?
+Expected Chunks: 1
+  1. SetKeyspaceDurabilityPolicy
+Retrieved Chunks: 3
+  1. as dictated by registered plugins. To set the durability policy of customer keyspace to semi_sync, y...
+  2. ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the comm...
+  3. outputs --server string server to use for the connection (required) --topo-global-root string the pa...
+Chunks Found: 1/1
+Accuracy: 100.00%
+Missing Chunks: []
+Answer: ### Changing Durability Policy for an Existing Keyspace
+To change the durability policy for an existing keyspace, you can use the `SetKeyspaceDurabilityPolicy` command provided by `vtctldclient`. 
+
+Th...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 14: Can I create my own durability policy for my specific use case?
+Expected Chunks: 1
+  1. Vitess now supports a configurable interface for durability policies.
+Retrieved Chunks: 3
+  1. outputs --server string server to use for the connection (required) --topo-global-root string the pa...
+  2. ### Options inherited from parent commands ``` --action_timeout duration timeout to use for the comm...
+  3. \ --instance-poll-time "1s" \ --topo-information-refresh-duration "30s" \ --alsologtostderr ``` You ...
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['Vitess now supports a configurable interface for durability policies.']
+Answer: ### Creating a Custom Durability Policy
+According to the provided context, the possible values for durability policy include 'semi_sync', 'none', and **others as dictated by registered plugins**. This...
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+=== SUMMARY STATISTICS ===
+Total Test Cases: 14
+Total Expected Chunks: 14
+Total Chunks Found: 12
+Overall Accuracy: 85.71%
