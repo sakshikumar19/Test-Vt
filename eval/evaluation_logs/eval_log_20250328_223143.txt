@@ -1,0 +1,116 @@
+=== VITESS FAQ CHATBOT EVALUATION LOG ===
+Started: 2025-03-28 22:31:43
+==================================================
+
+QUERY: 2025-03-28 22:33:12
+Question: What is VTOrc?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.54 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Is there a way to restrict the keyspace or shards a VTOrc instance keeps track off?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 1.2 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: How can I make VTOrc ignore certain keyspaces or shards?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 2.52 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Can VTOrc detect if a primary tablet is misconfigured but not down
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 2.05 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Can you provide an example of how to run VTOrc in the operator?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.0 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: How do I access the VTOrc UI after having deployed it using the operator?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 2.41 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Can I run a single VTOrc instance for multiple keyspaces in the operator?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 3.1 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: How does Vitess ensure that 2 VTOrc instances don't run conflicting recoveries?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.0 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: I want to debug my cluster and turn off replication on a specific instance, but VTOrc keeps fixing it. How can I stop this?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 2.99 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: How can I check the status of VTOrc?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.82 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Is there a metric in VTOrc to tell me how many recoveries are currently running?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.0 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: I am running with the semi_sync durability policy. How many nodes have to crash for it to require manual intervention?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.93 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: How do I change the durability policy for an existing keyspace?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 1.0 ms
+Sources: 
+--------------------------------------------------
+
+QUERY: 2025-03-28 22:33:12
+Question: Can I create my own durability policy for my specific use case?
+Docs Retrieved: 0
+Top Doc Score: None
+Response Time: 0.88 ms
+Sources: 
+--------------------------------------------------
+

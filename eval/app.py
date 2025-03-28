@@ -300,7 +300,7 @@ class ChatbotEvaluator:
 def run_extract_docs():
     """Run the extract_docs.py script to clone repos and extract data"""
     try:
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "extract_docs.py"))
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "extract_docs.py"))
 
         # Check if the script exists
         if os.path.exists(script_path):

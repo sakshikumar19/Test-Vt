@@ -1,0 +1,164 @@
+=== GROUND TRUTH EVALUATION RESULTS ===
+Started: 2025-03-28 22:33:12
+Test Cases: 14
+==================================================
+
+TEST CASE 1: What is VTOrc?
+Expected Chunks: 1
+  1. VTOrc is the automated fault detection and repair tool of Vitess.
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['VTOrc is the automated fault detection and repair tool of Vitess.']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 2: Is there a way to restrict the keyspace or shards a VTOrc instance keeps track off?
+Expected Chunks: 1
+  1. clusters_to_watch
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['clusters_to_watch']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 3: How can I make VTOrc ignore certain keyspaces or shards?
+Expected Chunks: 1
+  1. clusters_to_watch
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['clusters_to_watch']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 4: Can VTOrc detect if a primary tablet is misconfigured but not down
+Expected Chunks: 1
+  1. VTOrc detects when the primary tablet has configuration issues
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['VTOrc detects when the primary tablet has configuration issues']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 5: Can you provide an example of how to run VTOrc in the operator?
+Expected Chunks: 1
+  1. vitessOrchestrator:
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['vitessOrchestrator:']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 6: How do I access the VTOrc UI after having deployed it using the operator?
+Expected Chunks: 1
+  1. port-forwarding can be setup to access it
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['port-forwarding can be setup to access it']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 7: Can I run a single VTOrc instance for multiple keyspaces in the operator?
+Expected Chunks: 1
+  1. The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['The Vitess operator deploys one VTOrc instance for each keyspace that it is configured for']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 8: How does Vitess ensure that 2 VTOrc instances don't run conflicting recoveries?
+Expected Chunks: 1
+  1. We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes.
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['We do so by using the existing central topology-server. Each of these services, acquire a shard lock before it proceeds to run any fixes.']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 9: I want to debug my cluster and turn off replication on a specific instance, but VTOrc keeps fixing it. How can I stop this?
+Expected Chunks: 1
+  1. /api/disable-global-recoveries
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['/api/disable-global-recoveries']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 10: How can I check the status of VTOrc?
+Expected Chunks: 1
+  1. /debug/health
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['/debug/health']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 11: Is there a metric in VTOrc to tell me how many recoveries are currently running?
+Expected Chunks: 1
+  1. PendingRecoveries
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['PendingRecoveries']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 12: I am running with the semi_sync durability policy. How many nodes have to crash for it to require manual intervention?
+Expected Chunks: 1
+  1. This durability policy sets the number of required semi-sync acknowledgements to 1. It only allows REPLICA type tablets to send semi-sync acknowledgements. It returns NeutralPromoteRule for REPLICA tablet types, MustNotPromoteRule for everything else.
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['This durability policy sets the number of required semi-sync acknowledgements to 1. It only allows REPLICA type tablets to send semi-sync acknowledgements. It returns NeutralPromoteRule for REPLICA tablet types, MustNotPromoteRule for everything else.']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 13: How do I change the durability policy for an existing keyspace?
+Expected Chunks: 1
+  1. SetKeyspaceDurabilityPolicy
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['SetKeyspaceDurabilityPolicy']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+TEST CASE 14: Can I create my own durability policy for my specific use case?
+Expected Chunks: 1
+  1. Vitess now supports a configurable interface for durability policies.
+Retrieved Chunks: 0
+Chunks Found: 0/1
+Accuracy: 0.00%
+Missing Chunks: ['Vitess now supports a configurable interface for durability policies.']
+Answer: I don't have any knowledge base to search from. Please ingest some documentation first....
+LLM Judge: Not evaluated
+--------------------------------------------------
+
+=== SUMMARY STATISTICS ===
+Total Test Cases: 14
+Total Expected Chunks: 14
+Total Chunks Found: 0
+Overall Accuracy: 0.00%
