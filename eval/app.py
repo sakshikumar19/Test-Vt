@@ -357,7 +357,7 @@ def run_streamlit_eval():
             )
         
         # Add chunk size and overlap parameters to sidebar
-        chunk_size = st.slider("Chunk Size", min_value=100, max_value=1000, value=300, step=50)
+        chunk_size = st.slider("Chunk Size", min_value=100, max_value=1000, value=400, step=50)
         chunk_overlap = st.slider("Chunk Overlap", min_value=0, max_value=200, value=50, step=10)
         
         # Retrieval settings
