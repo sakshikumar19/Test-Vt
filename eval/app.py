@@ -369,7 +369,8 @@ def run_streamlit_eval():
             if success:
                 st.success("Data collection completed successfully!")
             else:
-                st.error(f"Error during data collection: {message}")
+                pass
+                # st.error(f"Error during data collection: {message}")
             st.session_state.extract_docs_run = True
     
     # Initialize chatbot if not in session state
